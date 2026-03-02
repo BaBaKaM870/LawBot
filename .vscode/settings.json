@@ -1,0 +1,6 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.jdt.ls.vmargs": "-javaagent:C:/Users/yohan/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar",
+    "jdk.vmArgs": "-javaagent:C:/Users/yohan/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
