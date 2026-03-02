@@ -1,31 +1,23 @@
-package com.example.simulateur.controller;
-
-import com.example.simulateur.model.Evidence;
-import com.example.simulateur.service.TrialService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/evidence")
 public class EvidenceController {
 
-    private final TrialService trialService;
+    private final TrialService trialService; // Pour lier la preuve au procès en cours
 
     public EvidenceController(TrialService trialService) {
         this.trialService = trialService;
     }
 
-    // 📂 Voir toutes les preuves
-    @GetMapping
-    public List<Evidence> getAllEvidence() {
-        return trialService.getAllEvidence();
+    @GetMapping("/case/{caseId}")
+    public ResponseEntity<List<Evidence>> getEvidenceList(@PathVariable Long caseId) {
+        return ResponseEntity.ok(trialService.getEvidencesForCase(caseId));
     }
 
-    // 🛑 Contester une preuve
-    @PostMapping("/challenge/{id}")
-    public String challengeEvidence(@PathVariable Long id) {
-        trialService.challengeEvidence(id);
-        return "Preuve contestée.";
+    @PostMapping("/present")
+    public ResponseEntity<String> presentEvidence(@RequestParam Long trialId, @RequestParam Long evidenceId) {
+        boolean impactful = trialService.presentEvidenceToJury(trialId, evidenceId);
+        return impactful ? 
+            ResponseEntity.ok("Le jury semble convaincu par cette preuve.") : 
+            ResponseEntity.ok("La preuve n'a pas eu l'effet escompté.");
     }
 }
