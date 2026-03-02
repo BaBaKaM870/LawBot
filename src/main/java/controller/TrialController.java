@@ -1,32 +1,27 @@
-package com.example.simulateur.controller;
-
-import com.example.simulateur.service.TrialService;
-import com.example.simulateur.service.VerdictService;
-import com.example.simulateur.dto.VerdictDTO;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/trial")
 public class TrialController {
 
     private final TrialService trialService;
-    private final VerdictService verdictService;
 
-    public TrialController(TrialService trialService, VerdictService verdictService) {
+    public TrialController(TrialService trialService) {
         this.trialService = trialService;
-        this.verdictService = verdictService;
     }
 
-    // 🎬 Démarrer un nouveau procès
     @PostMapping("/start")
-    public String startTrial() {
-        trialService.startNewTrial();
-        return "Procès démarré avec succès.";
+    public ResponseEntity<Trial> startNewTrial() {
+        Trial newTrial = trialService.createNewTrial();
+        return ResponseEntity.ok(newTrial);
     }
 
-    // ⚖️ Obtenir le verdict
-    @GetMapping("/verdict")
-    public VerdictDTO getVerdict() {
-        return verdictService.calculateVerdict();
+    @PostMapping("/{id}/next-phase")
+    public ResponseEntity<String> advancePhase(@PathVariable Long id) {
+        trialService.advanceTrialPhase(id);
+        return ResponseEntity.ok("Phase suivante activée");
+    }
+
+    @GetMapping("/{id}/verdict")
+    public ResponseEntity<VerdictDTO> getFinalVerdict(@PathVariable Long id) {
+        return ResponseEntity.ok(trialService.calculateVerdict(id));
     }
 }
