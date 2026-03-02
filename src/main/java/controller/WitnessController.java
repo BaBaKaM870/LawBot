@@ -1,10 +1,3 @@
-package com.example.simulateur.controller;
-
-import com.example.simulateur.dto.QuestionDTO;
-import com.example.simulateur.dto.WitnessResponseDTO;
-import com.example.simulateur.service.WitnessService;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/witness")
 public class WitnessController {
@@ -15,9 +8,21 @@ public class WitnessController {
         this.witnessService = witnessService;
     }
 
-    // ❓ Poser une question à un témoin
-    @PostMapping("/question")
-    public WitnessResponseDTO askQuestion(@RequestBody QuestionDTO questionDTO) {
-        return witnessService.processQuestion(questionDTO);
+    @PostMapping("/{witnessId}/ask")
+    public ResponseEntity<WitnessResponseDTO> askQuestion(
+            @PathVariable Long witnessId, 
+            @RequestBody QuestionDTO question) {
+        
+        WitnessResponseDTO response = witnessService.processQuestion(witnessId, question);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{witnessId}/confront")
+    public ResponseEntity<Contradiction> confrontWitness(
+            @PathVariable Long witnessId, 
+            @RequestParam Long evidenceId) {
+            
+        Contradiction result = witnessService.checkContradiction(witnessId, evidenceId);
+        return ResponseEntity.ok(result);
     }
 }
