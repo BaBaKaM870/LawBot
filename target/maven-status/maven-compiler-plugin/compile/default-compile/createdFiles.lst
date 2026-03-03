@@ -1,8 +1,10 @@
 controller\TrialController.class
 model\Lawyer$Side.class
+dto\GameStateDTO.class
 model\Trial.class
 service\CaseGeneratorService$EvidenceTemplate.class
 model\Case$CrimeType.class
+controller\GameController.class
 model\Person.class
 model\Contradiction.class
 model\Case.class
@@ -12,7 +14,9 @@ model\JuryMember.class
 model\JuryMember$JurorProfile.class
 model\Lawyer.class
 model\Statement.class
+controller\GameController$1.class
 model\Evidence$EvidenceType.class
+dto\ActionResultDTO.class
 model\Witness$WitnessPersonality.class
 dto\VerdictDTO.class
 model\Trial$TrialPhase.class
@@ -21,10 +25,12 @@ model\Suspect.class
 controller\WitnessController.class
 model\Trial$TrialStatus.class
 model\Evidence.class
+dto\EvidenceInfoDTO.class
 dto\WitnessResponseDTO.class
 game\TerminalGameRunner.class
 LawBotApplication.class
 service\TrialService.class
+dto\WitnessInfoDTO.class
 service\CaseGeneratorService$CaseTemplate.class
 service\CaseGeneratorService.class
 dto\QuestionDTO.class
