@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Scanner;
 
-@Component
+// @Component  ← désactivé : mode web actif. Remettre pour jouer en terminal.
 public class TerminalGameRunner implements CommandLineRunner {
 
     // ── Codes ANSI ──────────────────────────────────────────────────────────

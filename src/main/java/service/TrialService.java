@@ -52,6 +52,7 @@ public class TrialService {
     private Trial createTrial(Case cas) {
         Trial trial = new Trial();
         Long id = idCounter.getAndIncrement();
+        trial.setId(id);
         trial.setLawCase(cas);
         trial.setCurrentPhase(Trial.TrialPhase.OPENING_STATEMENTS);
         trial.setActive(true);
