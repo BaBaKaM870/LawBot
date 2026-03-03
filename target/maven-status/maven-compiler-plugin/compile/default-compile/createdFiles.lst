@@ -22,6 +22,7 @@ controller\WitnessController.class
 model\Trial$TrialStatus.class
 model\Evidence.class
 dto\WitnessResponseDTO.class
+game\TerminalGameRunner.class
 LawBotApplication.class
 service\TrialService.class
 service\CaseGeneratorService$CaseTemplate.class
@@ -31,3 +32,4 @@ model\Witness.class
 service\WitnessService.class
 service\CaseGeneratorService$WitnessTemplate.class
 service\VerdictService.class
+game\TerminalGameRunner$1.class
