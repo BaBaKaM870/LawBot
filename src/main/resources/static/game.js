@@ -53,29 +53,39 @@ async function api(method, path, body) {
 //  Bootstrap
 // ════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('start-btn').addEventListener('click', startGame);
+  document.getElementById('start-btn').addEventListener('click', showTutorial);
   document.getElementById('replay-btn').addEventListener('click', replayGame);
+  document.getElementById('tuto-skip-btn').addEventListener('click', launchGame);
+  document.getElementById('tuto-play-btn').addEventListener('click', launchGame);
 });
 
-async function startGame() {
-  const btn = document.getElementById('start-btn');
-  btn.textContent = 'Chargement…';
-  btn.disabled = true;
+function showTutorial() {
+  document.getElementById('welcome-screen').classList.add('hidden');
+  document.getElementById('tutorial-overlay').classList.remove('hidden');
+}
+
+async function launchGame() {
+  const overlay = document.getElementById('tutorial-overlay');
+  overlay.classList.add('hidden');
+  const playBtn = document.getElementById('tuto-play-btn');
+  playBtn.textContent = 'Chargement…';
+  playBtn.disabled = true;
   try {
     const state = await api('POST', '/new');
     G.trialId = state.trialId;
     G.state   = state;
     G.lastResponse = null;
     setPhaseActions(state.phase);
-    document.getElementById('welcome-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     render(state);
   } catch (e) {
-    btn.textContent = 'Commencer une Affaire';
-    btn.disabled = false;
+    overlay.classList.remove('hidden');
+    playBtn.textContent = 'Commencer le procès !';
+    playBtn.disabled = false;
     toast('Erreur lors du démarrage : ' + e.message, 'error');
   }
 }
+
 
 async function replayGame() {
   document.getElementById('verdict-overlay').classList.add('hidden');
