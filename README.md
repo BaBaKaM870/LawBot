@@ -7,16 +7,17 @@
 ## 📸 Aperçu
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│  ⚖ LAWBOT     [Ouverture › Accusation › Défense › …]   Jury 58% │
-├──────────────┬───────────────────────────────────────────────────┤
-│              │                                                   │
-│  📁 Affaire  │        Phase active (injecté par JS)             │
-│  👤 Accusé   │                                                   │
-│              │   Témoins · Preuves · Questions · Verdict        │
-│  📋 Journal  │                                                   │
-│              │                                                   │
-└──────────────┴───────────────────────────────────────────────────┘
+  LAWBOT — Simulation de Proces
+  ================================================================
+  Phases  :  Ouverture > Accusation > Defense > Verdict
+  Jury    :  [======>                    ]  58%
+  ================================================================
+  Sidebar              |  Panneau principal
+  ---------------------+-----------------------------------------
+  Nom de l'affaire     |  Phase active (rendue par JS)
+  Accuse(e)            |  Temoins  /  Preuves  /  Questions
+  Journal des actions  |  Resultat de chaque action
+  ================================================================
 ```
 
 ---
