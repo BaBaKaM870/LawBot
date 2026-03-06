@@ -391,6 +391,64 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   gap: 1.25rem;
 }
 
+/* ─── Section label ────────────────────────────────────────── */
+.section-label {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ─── Phase guides (bannières d'instruction) ──────────────── */
+.phase-guide {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: .9rem 1.1rem;
+  border-radius: var(--radius);
+  border-left: 4px solid;
+  font-size: .85rem;
+  line-height: 1.55;
+}
+
+.phase-guide strong {
+  display: block;
+  font-size: .95rem;
+  margin-bottom: .25rem;
+}
+
+.phase-guide p { color: var(--text-muted); margin: 0; }
+
+.guide-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: .1rem; }
+
+.guide-blue  { background: rgba(52,152,219,.1); border-color: #3498db; color: #93c9f0; }
+.guide-red   { background: rgba(231,76,60,.1);  border-color: #e74c3c; color: #f1a39a; }
+.guide-green { background: rgba(39,174,96,.1);  border-color: #27ae60; color: #7dcea0; }
+.guide-gold  { background: var(--gold-dim);     border-color: var(--gold); color: var(--gold-light); }
+
+/* ─── Actions bar ───────────────────────────────────────────── */
+.actions-bar {
+  display: flex; align-items: center; gap: .75rem;
+}
+
+.actions-label {
+  font-size: .8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.action-dots {
+  display: flex; gap: .35rem;
+}
+
+.action-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  transition: background .3s;
+}
+
+.action-dot.active { background: var(--gold-light); box-shadow: 0 0 6px rgba(201,162,39,.4); }
+.action-dot.used   { background: rgba(255,255,255,.12); }
+
 /* Phase header */
 .phase-header {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -427,16 +485,27 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   gap: 1rem;
 }
 
+/* ─── Witness hint label ────────────────────────────────────── */
+.witness-hint {
+  font-size: .7rem;
+  color: var(--gold);
+  margin-bottom: .4rem;
+  opacity: .7;
+  letter-spacing: .03em;
+}
+
 /* ─── Witness card ─── */
 .witness-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
-  cursor: pointer;
+  cursor: default;
   transition: border-color .15s, background .15s, transform .15s;
   position: relative;
 }
+
+.witness-card.clickable { cursor: pointer; }
 
 .witness-card:hover {
   border-color: var(--gold);
@@ -556,26 +625,52 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .tag-gold   { background: var(--gold-dim); color: var(--gold-light); border: 1px solid var(--border); }
 .tag-muted  { background: rgba(255,255,255,.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,.08); }
 
-/* ─── Question area ─── */
-.question-area {
-  background: var(--bg-card);
-  border: 1px solid var(--gold);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  animation: slideDown .2s ease;
-}
-
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.question-area h4 {
-  font-size: .85rem;
-  color: var(--gold-light);
-  margin-bottom: .75rem;
+/* ─── Question box (nouvelle version intégrée) ─────────────── */
+.question-box {
+  background: var(--bg-card);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  animation: slideDown .22s ease;
 }
 
+.question-box-inner { padding: 1.1rem 1.25rem; }
+
+.qbox-title {
+  font-size: .9rem;
+  color: var(--gold-light);
+  margin-bottom: .85rem;
+}
+
+/* Questions suggérées (chips) */
+.quick-questions {
+  display: flex; flex-wrap: wrap; gap: .4rem;
+  margin-bottom: .85rem;
+}
+
+.q-chip {
+  background: rgba(201,162,39,.1);
+  border: 1px solid rgba(201,162,39,.25);
+  border-radius: 20px;
+  color: var(--gold-light);
+  font-size: .75rem;
+  padding: .28rem .7rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  font-family: var(--font-sans);
+  line-height: 1.4;
+}
+
+.q-chip:hover {
+  background: rgba(201,162,39,.22);
+  border-color: var(--gold);
+}
+
+/* Input de question */
 .question-input-row {
   display: flex; gap: .65rem;
 }
@@ -593,12 +688,34 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   transition: border-color .15s;
 }
 
-.question-input-row input:focus {
-  border-color: var(--gold);
+.question-input-row input:focus  { border-color: var(--gold); }
+.question-input-row input::placeholder { color: var(--text-muted); }
+
+.no-actions-msg {
+  font-size: .8rem;
+  color: var(--red);
+  margin-top: .6rem;
 }
 
-.question-input-row input::placeholder {
-  color: var(--text-muted);
+/* ─── Bouton contest ────────────────────────────────────────── */
+.btn-contest {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: linear-gradient(135deg, #c0392b, #922b21);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: .5rem 1rem;
+  font-size: .82rem; font-weight: 600;
+  cursor: pointer;
+  transition: filter .15s, transform .1s;
+  font-family: var(--font-sans);
+}
+.btn-contest:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+.contested-label {
+  font-size: .8rem;
+  color: var(--green);
+  font-weight: 600;
 }
 
 /* Witness response box */
