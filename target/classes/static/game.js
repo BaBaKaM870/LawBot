@@ -4,11 +4,12 @@
 //  État global
 // ════════════════════════════════════════════════════════════
 const G = {
-  trialId:          null,
-  state:            null,   // GameStateDTO courant
-  actionsLeft:      0,      // actions restantes dans la phase
-  selectedWitness:  -1,     // index du témoin sélectionné (défense)
-  confrontSel:      [],     // indices des témoins pour confrontation
+  trialId:         null,
+  state:           null,
+  actionsLeft:     0,
+  selectedWitness: -1,
+  confrontSel:     [],
+  lastResponse:    null,   // Dernière réponse du témoin (persistante)
 };
 
 const PHASE_MAX_ACTIONS = {
@@ -18,7 +19,7 @@ const PHASE_MAX_ACTIONS = {
 };
 
 const PHASE_LABELS = [
-  'Ouverture', 'Accusation', 'Défense', 'Contre-interrogatoire', 'Plaidoirie', 'Verdict'
+  'Ouverture', 'Accusation', 'Défense', 'Contre-interro.', 'Plaidoirie', 'Verdict'
 ];
 
 const CRIME_FR = {
@@ -26,14 +27,22 @@ const CRIME_FR = {
   THEFT: 'Vol', ASSAULT: 'Agression', CORRUPTION: 'Corruption'
 };
 
+// Questions suggérées pour la défense
+const SUGGESTED_QUESTIONS = [
+  'Où étiez-vous au moment des faits ?',
+  'Connaissez-vous personnellement l\'accusé(e) ?',
+  'Êtes-vous certain(e) de ce que vous avez vu ?',
+  'Aviez-vous des raisons de mentir ?',
+  'Votre témoignage a-t-il changé depuis la première audition ?',
+  'Quelqu\'un vous a-t-il influencé avant de témoigner ?',
+  'Pouvez-vous décrire précisément ce que vous avez vu ?',
+];
+
 // ════════════════════════════════════════════════════════════
 //  API
 // ════════════════════════════════════════════════════════════
 async function api(method, path, body) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-  };
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch('/api/game' + path, opts);
   if (!res.ok) throw new Error(await res.text());
@@ -52,13 +61,12 @@ async function startGame() {
   const btn = document.getElementById('start-btn');
   btn.textContent = 'Chargement…';
   btn.disabled = true;
-
   try {
     const state = await api('POST', '/new');
     G.trialId = state.trialId;
     G.state   = state;
+    G.lastResponse = null;
     setPhaseActions(state.phase);
-
     document.getElementById('welcome-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     render(state);
@@ -73,17 +81,18 @@ async function replayGame() {
   document.getElementById('verdict-overlay').classList.add('hidden');
   document.getElementById('welcome-screen').classList.remove('hidden');
   document.getElementById('game-screen').classList.add('hidden');
-
   const btn = document.getElementById('start-btn');
   btn.textContent = 'Commencer une Affaire';
   btn.disabled = false;
-  G.trialId = null; G.state = null;
+  G.trialId = null; G.state = null; G.lastResponse = null;
   G.selectedWitness = -1; G.confrontSel = [];
 }
 
 // ════════════════════════════════════════════════════════════
-//  Render principal
+//  Render
 // ════════════════════════════════════════════════════════════
+
+/** Render complet : header + sidebar + phase panel. */
 function render(state) {
   G.state = state;
   renderHeader(state);
@@ -91,30 +100,32 @@ function render(state) {
   renderPhasePanel(state);
 }
 
+/** Render partiel : header + sidebar seulement. Utilisé après une action
+ *  pour ne pas perturber la zone de réponse / saisie en cours. */
+function softRender(state) {
+  G.state = state;
+  renderHeader(state);
+  renderSidebar(state);
+}
+
 // ─── Header ─────────────────────────────────────────────────
 function renderHeader(state) {
-  // Phase nav
   const nav = document.getElementById('phase-nav');
   nav.innerHTML = PHASE_LABELS.map((label, i) => {
-    const cls = i < state.phaseIndex ? 'done'
-              : i === state.phaseIndex ? 'active' : '';
-    const icon = i < state.phaseIndex ? '✓' : (i + 1);
+    const cls  = i < state.phaseIndex ? 'done' : i === state.phaseIndex ? 'active' : '';
+    const icon = i < state.phaseIndex ? '✓' : i + 1;
     return `<div class="phase-step ${cls}">
       <span class="step-num">${icon}</span>
       <span class="step-label">${label}</span>
     </div>`;
   }).join('');
 
-  // Jury bar
-  const pct = Math.round(state.juryConviction * 100);
+  const pct  = Math.round(state.juryConviction * 100);
   const fill = document.getElementById('jury-fill');
-  fill.style.width = pct + '%';
-  // Vert = bon pour la défense (conviction basse), rouge = mauvais
+  fill.style.width      = pct + '%';
   fill.style.background = pct < 40 ? '#27ae60' : pct < 65 ? '#f39c12' : '#e74c3c';
-  document.getElementById('jury-pct').textContent = pct + '%';
-
-  // Score
-  document.getElementById('score-val').textContent =
+  document.getElementById('jury-pct').textContent   = pct + '%';
+  document.getElementById('score-val').textContent  =
     state.successfulActions + '/' + state.totalActions;
 }
 
@@ -124,13 +135,12 @@ function renderSidebar(state) {
 
   const badge = document.getElementById('crime-badge');
   badge.textContent = CRIME_FR[state.crimeType] || state.crimeType;
-  badge.className = 'crime-badge ' + (state.crimeType || '').toLowerCase();
+  badge.className   = 'crime-badge ' + (state.crimeType || '').toLowerCase();
 
   document.getElementById('suspect-name').textContent = state.suspectName;
-  document.getElementById('case-desc').textContent = state.caseDescription;
+  document.getElementById('case-desc').textContent    = state.caseDescription;
 
-  // Events
-  const list = document.getElementById('events-list');
+  const list   = document.getElementById('events-list');
   const events = [...(state.events || [])].reverse();
   list.innerHTML = events.length
     ? events.map(e => {
@@ -142,41 +152,41 @@ function renderSidebar(state) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  Phase Panel (contenu dynamique)
+//  Phase Panel
 // ════════════════════════════════════════════════════════════
 function renderPhasePanel(state) {
   const panel = document.getElementById('phase-panel');
   panel.innerHTML = '';
+  G.selectedWitness = -1;
+  G.confrontSel     = [];
+  G.lastResponse    = null;
 
   switch (state.phase) {
-    case 'OPENING_STATEMENTS':  renderOpening(panel, state);        break;
-    case 'PROSECUTION_CASE':    renderProsecution(panel, state);    break;
-    case 'DEFENSE_CASE':        renderDefense(panel, state);        break;
-    case 'CROSS_EXAMINATION':   renderCrossExam(panel, state);      break;
-    case 'CLOSING_ARGUMENTS':   renderClosing(panel, state);        break;
-    case 'VERDICT':             triggerVerdict();                   break;
+    case 'OPENING_STATEMENTS': renderOpening(panel, state);     break;
+    case 'PROSECUTION_CASE':   renderProsecution(panel, state); break;
+    case 'DEFENSE_CASE':       renderDefense(panel, state);     break;
+    case 'CROSS_EXAMINATION':  renderCrossExam(panel, state);   break;
+    case 'CLOSING_ARGUMENTS':  renderClosing(panel, state);     break;
+    case 'VERDICT':            triggerVerdict();                break;
   }
 }
 
 // ─── Phase 1 : Ouverture ─────────────────────────────────────
 function renderOpening(panel, state) {
   panel.innerHTML = `
-    <div class="phase-header">
+    <div class="phase-guide guide-blue">
+      <span class="guide-icon">📋</span>
       <div>
-        <h2 class="phase-title">Déclarations d'ouverture</h2>
-        <p class="phase-subtitle">Prenez connaissance du dossier avant de commencer.</p>
+        <strong>Déclarations d'ouverture</strong>
+        <p>Prenez connaissance du dossier : les témoins, les preuves et l'accusé(e). C'est votre seule chance de tout lire avant le début du procès.</p>
       </div>
     </div>
 
-    <div>
-      <h3 style="font-size:.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Témoins</h3>
-      <div class="card-grid" id="witness-cards"></div>
-    </div>
+    <div class="section-label">Témoins à interroger</div>
+    <div class="card-grid" id="witness-cards"></div>
 
-    <div>
-      <h3 style="font-size:.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">Preuves</h3>
-      <div class="card-grid" id="evidence-cards"></div>
-    </div>
+    <div class="section-label" style="margin-top:1rem">Preuves présentées</div>
+    <div class="card-grid" id="evidence-cards"></div>
 
     <div class="next-bar">
       <button class="btn-primary" id="next-btn">Commencer le procès →</button>
@@ -184,21 +194,27 @@ function renderOpening(panel, state) {
 
   renderWitnessCards('#witness-cards', state, false);
   renderEvidenceCards('#evidence-cards', state, false);
-
   document.getElementById('next-btn').addEventListener('click', advancePhase);
 }
 
 // ─── Phase 2 : Accusation ─────────────────────────────────────
 function renderProsecution(panel, state) {
   panel.innerHTML = `
-    <div class="phase-header">
+    <div class="phase-guide guide-red">
+      <span class="guide-icon">⚔️</span>
       <div>
-        <h2 class="phase-title">Cas de l'accusation</h2>
-        <p class="phase-subtitle">Contestez les preuves douteuses pour influencer le jury.</p>
+        <strong>Phase d'accusation — Contestez les preuves douteuses</strong>
+        <p>
+          Cliquez sur <strong>Contester</strong> sous une preuve qui vous semble fausse ou fabriquée.
+          Une preuve <span style="color:#e57373">authentique</span> vous nuit,
+          une preuve <span style="color:#66bb6a">douteuse</span> peut être neutralisée.
+        </p>
       </div>
-      <div class="actions-left-badge" id="actions-badge">
-        ${G.actionsLeft} action${G.actionsLeft > 1 ? 's' : ''} restante${G.actionsLeft > 1 ? 's' : ''}
-      </div>
+    </div>
+
+    <div class="actions-bar">
+      <span class="actions-label">Actions restantes :</span>
+      <div class="action-dots" id="action-dots"></div>
     </div>
 
     <div class="card-grid" id="evidence-cards"></div>
@@ -207,6 +223,7 @@ function renderProsecution(panel, state) {
       <button class="btn-outline" id="next-btn">Passer à la défense →</button>
     </div>`;
 
+  renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.PROSECUTION_CASE);
   renderEvidenceCards('#evidence-cards', state, true);
   document.getElementById('next-btn').addEventListener('click', advancePhase);
 }
@@ -214,51 +231,63 @@ function renderProsecution(panel, state) {
 // ─── Phase 3 : Défense ─────────────────────────────────────
 function renderDefense(panel, state) {
   panel.innerHTML = `
-    <div class="phase-header">
+    <div class="phase-guide guide-green">
+      <span class="guide-icon">🛡️</span>
       <div>
-        <h2 class="phase-title">Cas de la défense</h2>
-        <p class="phase-subtitle">Sélectionnez un témoin et posez-lui une question pour révéler des contradictions.</p>
+        <strong>Défense — Interrogez les témoins</strong>
+        <p>
+          <strong>Cliquez sur un témoin</strong> pour l'interroger.
+          Choisissez une question suggérée ou écrivez la vôtre.
+          Cherchez des contradictions dans leurs déclarations !
+        </p>
       </div>
-      <div class="actions-left-badge" id="actions-badge">
-        ${G.actionsLeft} action${G.actionsLeft > 1 ? 's' : ''} restante${G.actionsLeft > 1 ? 's' : ''}
-      </div>
+    </div>
+
+    <div class="actions-bar">
+      <span class="actions-label">Questions restantes :</span>
+      <div class="action-dots" id="action-dots"></div>
     </div>
 
     <div class="card-grid" id="witness-cards"></div>
 
-    <div id="question-area" style="display:none"></div>
+    <div id="question-box" class="question-box hidden"></div>
     <div id="response-area"></div>
 
     <div class="next-bar">
       <button class="btn-outline" id="next-btn">Contre-interrogatoire →</button>
     </div>`;
 
+  renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.DEFENSE_CASE);
   renderWitnessCards('#witness-cards', state, true);
   document.getElementById('next-btn').addEventListener('click', advancePhase);
 }
 
 // ─── Phase 4 : Contre-interrogatoire ──────────────────────────
 function renderCrossExam(panel, state) {
-  G.confrontSel = [];
-
   panel.innerHTML = `
-    <div class="phase-header">
+    <div class="phase-guide guide-gold">
+      <span class="guide-icon">🔍</span>
       <div>
-        <h2 class="phase-title">Contre-interrogatoire</h2>
-        <p class="phase-subtitle">Sélectionnez deux témoins et confrontez leurs déclarations.</p>
+        <strong>Contre-interrogatoire — Confrontez deux témoins</strong>
+        <p>
+          Cliquez sur <strong>deux témoins</strong> pour les sélectionner (badges T1 et T2).
+          Entrez le sujet de la confrontation et cliquez <strong>Confronter</strong>.
+        </p>
       </div>
-      <div class="actions-left-badge" id="actions-badge">
-        ${G.actionsLeft} action${G.actionsLeft > 1 ? 's' : ''} restante${G.actionsLeft > 1 ? 's' : ''}
-      </div>
+    </div>
+
+    <div class="actions-bar">
+      <span class="actions-label">Confrontations restantes :</span>
+      <div class="action-dots" id="action-dots"></div>
     </div>
 
     <div class="card-grid" id="witness-cards"></div>
 
-    <div class="confront-section" id="confront-form" style="display:none">
-      <h4>Confronter ${state.witnesses[0]?.name ?? '—'} et ${state.witnesses[1]?.name ?? '—'}</h4>
+    <div class="confront-section hidden" id="confront-form">
+      <h4 id="confront-title">Sélectionnez deux témoins</h4>
       <div class="confront-form">
-        <input id="topic-input" type="text" placeholder="Sujet de la confrontation (ex: alibi, présence...)" />
-        <button class="btn-success" id="confront-btn">Confronter</button>
+        <input id="topic-input" type="text" placeholder="Sujet : alibi, présence sur les lieux, heure des faits…" />
+        <button class="btn-success" id="confront-btn">⚡ Confronter</button>
       </div>
     </div>
 
@@ -268,6 +297,7 @@ function renderCrossExam(panel, state) {
       <button class="btn-outline" id="next-btn">Passer aux plaidoiries →</button>
     </div>`;
 
+  renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.CROSS_EXAMINATION);
   renderWitnessCards('#witness-cards', state, true);
   document.getElementById('next-btn').addEventListener('click', advancePhase);
 }
@@ -275,16 +305,17 @@ function renderCrossExam(panel, state) {
 // ─── Phase 5 : Plaidoiries ──────────────────────────────────
 function renderClosing(panel, state) {
   panel.innerHTML = `
-    <div class="phase-header">
+    <div class="phase-guide guide-gold">
+      <span class="guide-icon">🎤</span>
       <div>
-        <h2 class="phase-title">Plaidoiries finales</h2>
-        <p class="phase-subtitle">Votre dernière chance de convaincre le jury.</p>
+        <strong>Plaidoiries finales — Convaincre le jury</strong>
+        <p>Rédigez votre plaidoirie finale pour défendre votre client. Ce texte est cosmétique, mais profitez-en pour récapituler vos arguments avant le verdict !</p>
       </div>
     </div>
 
     <div class="plea-section">
       <h3>Votre plaidoirie</h3>
-      <p>Rédigez votre plaidoirie finale pour défendre votre client (optionnel).</p>
+      <p>Membres du jury, vous avez entendu les témoignages et vu les preuves. Il est temps de délibérer.</p>
       <textarea id="plea-input" placeholder="Membres du jury, mon client est innocent car…"></textarea>
       <button class="btn-primary" id="verdict-btn">⚖ Rendre le verdict</button>
     </div>`;
@@ -292,7 +323,7 @@ function renderClosing(panel, state) {
   document.getElementById('verdict-btn').addEventListener('click', async () => {
     const btn = document.getElementById('verdict-btn');
     btn.disabled = true;
-    btn.textContent = 'Délibération du jury…';
+    btn.textContent = 'Le jury délibère…';
     try {
       const verdict = await api('POST', `/${G.trialId}/verdict`);
       showVerdict(verdict);
@@ -308,30 +339,43 @@ function renderClosing(panel, state) {
 //  Sous-composants
 // ════════════════════════════════════════════════════════════
 
-// ─── Cartes Témoins ──────────────────────────────────────────
+function renderActionDots(left, max) {
+  const el = document.getElementById('action-dots');
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'action-dot ' + (i < left ? 'active' : 'used');
+    el.appendChild(dot);
+  }
+}
+
 function renderWitnessCards(selector, state, clickable) {
   const container = document.querySelector(selector);
   if (!container) return;
 
   container.innerHTML = state.witnesses.map(w => {
-    const credColor = w.credibility >= 70 ? '#27ae60' : w.credibility >= 40 ? '#f39c12' : '#e74c3c';
+    const credPct   = w.credibility;
+    const credColor = credPct >= 70 ? '#27ae60' : credPct >= 40 ? '#f39c12' : '#e74c3c';
     const stressPct = Math.round(w.stressLevel * 100);
-    const stressColor = stressPct < 30 ? '#27ae60' : stressPct < 60 ? '#f39c12' : '#e74c3c';
+    const stressCol = stressPct < 30 ? '#27ae60' : stressPct < 60 ? '#f39c12' : '#e74c3c';
+    const isSelected = G.confrontSel.includes(w.index) ||
+                       G.selectedWitness === w.index;
 
-    return `<div class="witness-card${clickable ? ' clickable' : ''}" data-idx="${w.index}">
+    return `<div class="witness-card${clickable ? ' clickable' : ''}${isSelected ? ' selected' : ''}"
+                 data-idx="${w.index}" title="${clickable ? 'Cliquer pour sélectionner ce témoin' : ''}">
+      ${clickable ? `<div class="witness-hint">👆 Cliquer pour interroger</div>` : ''}
       <div class="witness-name">${w.name}</div>
       <div class="witness-job">${w.profession || '—'}</div>
-      ${w.initialStatement
-        ? `<div class="witness-stmt">« ${w.initialStatement} »</div>`
-        : ''}
+      ${w.initialStatement ? `<div class="witness-stmt">« ${w.initialStatement} »</div>` : ''}
       <div class="meter-row">
         <span class="meter-label">Crédibilité</span>
-        <div class="meter-track"><div class="meter-fill" style="width:${w.credibility}%;background:${credColor}"></div></div>
-        <span class="meter-val">${w.credibility}</span>
+        <div class="meter-track"><div class="meter-fill" style="width:${credPct}%;background:${credColor}"></div></div>
+        <span class="meter-val">${credPct}</span>
       </div>
       <div class="meter-row">
         <span class="meter-label">Stress</span>
-        <div class="meter-track"><div class="meter-fill" style="width:${stressPct}%;background:${stressColor}"></div></div>
+        <div class="meter-track"><div class="meter-fill" style="width:${stressPct}%;background:${stressCol}"></div></div>
         <span class="meter-val">${stressPct}%</span>
       </div>
     </div>`;
@@ -344,23 +388,29 @@ function renderWitnessCards(selector, state, clickable) {
   }
 }
 
-// ─── Cartes Preuves ──────────────────────────────────────────
 function renderEvidenceCards(selector, state, withContestBtn) {
   const container = document.querySelector(selector);
   if (!container) return;
 
   container.innerHTML = state.evidences.map(e => {
-    const cls = e.contested ? 'evidence-card contested' : e.authentic ? 'evidence-card authentic' : 'evidence-card fake';
-    const weightPct = Math.round(e.weight * 100);
+    const pct  = Math.round(e.weight * 100);
+    const cls  = e.contested
+      ? 'evidence-card contested'
+      : e.authentic ? 'evidence-card authentic' : 'evidence-card fake';
 
     const tags = [];
     if (e.authentic) tags.push('<span class="tag tag-red">Authentique</span>');
-    else             tags.push('<span class="tag tag-green">Douteux</span>');
-    if (e.contested) tags.push('<span class="tag tag-gold">Contesté</span>');
+    else             tags.push('<span class="tag tag-green">Douteux ← à contester !</span>');
+    if (e.contested) tags.push('<span class="tag tag-gold">✔ Contesté</span>');
 
-    const btn = withContestBtn && !e.contested && G.actionsLeft > 0
-      ? `<button class="btn-danger" style="font-size:.75rem;padding:.35rem .8rem;" data-idx="${e.index}">Contester</button>`
-      : '';
+    const canContest = withContestBtn && !e.contested && G.actionsLeft > 0;
+    const btn = canContest
+      ? `<button class="btn-contest" data-idx="${e.index}">✘ Contester cette preuve</button>`
+      : e.contested
+        ? `<span class="contested-label">✔ Preuve neutralisée</span>`
+        : !e.authentic && G.actionsLeft === 0
+          ? `<span class="contested-label" style="color:var(--text-muted)">Plus d'actions</span>`
+          : '';
 
     return `<div class="${cls}">
       <div class="evidence-desc">${e.description}</div>
@@ -368,28 +418,29 @@ function renderEvidenceCards(selector, state, withContestBtn) {
       <div class="meter-row">
         <span class="meter-label">Force</span>
         <div class="meter-track">
-          <div class="meter-fill" style="width:${weightPct}%;background:${e.authentic ? '#e74c3c' : '#27ae60'}"></div>
+          <div class="meter-fill" style="width:${pct}%;background:${e.authentic ? '#e74c3c' : '#27ae60'}"></div>
         </div>
-        <span class="meter-val">${weightPct}%</span>
+        <span class="meter-val">${pct}%</span>
       </div>
-      ${btn ? `<div style="margin-top:.65rem">${btn}</div>` : ''}
+      ${btn ? `<div style="margin-top:.75rem">${btn}</div>` : ''}
     </div>`;
   }).join('');
 
   if (withContestBtn) {
-    container.querySelectorAll('[data-idx]').forEach(btn => {
+    container.querySelectorAll('.btn-contest').forEach(btn => {
       btn.addEventListener('click', () => onContest(parseInt(btn.dataset.idx)));
     });
   }
 }
 
 // ════════════════════════════════════════════════════════════
-//  Handlers d'action
+//  Handlers
 // ════════════════════════════════════════════════════════════
 
-// Contester une preuve
+// ─── Contester une preuve ─────────────────────────────────────
 async function onContest(idx) {
   if (G.actionsLeft <= 0) return;
+  setLoading(true);
   try {
     const result = await api('POST', `/${G.trialId}/contest/${idx}`);
     if (result.success) {
@@ -398,21 +449,27 @@ async function onContest(idx) {
     } else {
       toast(result.message, 'error');
     }
-    updateActionsLeft();
-    render(result.gameState);
+    softRender(result.gameState);
+    renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.PROSECUTION_CASE);
+    renderEvidenceCards('#evidence-cards', result.gameState, true);
   } catch (e) {
     toast('Erreur : ' + e.message, 'error');
+  } finally {
+    setLoading(false);
   }
 }
 
-// Cliquer sur un témoin
+// ─── Clic sur un témoin ───────────────────────────────────────
 function onWitnessClick(idx) {
   const phase = G.state?.phase;
 
   if (phase === 'DEFENSE_CASE') {
     G.selectedWitness = idx;
-    highlightWitness(idx);
-    showQuestionInput(idx);
+    // Highlight
+    document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
+      c.classList.toggle('selected', parseInt(c.dataset.idx) === idx);
+    });
+    openQuestionBox(idx);
     return;
   }
 
@@ -425,119 +482,151 @@ function onWitnessClick(idx) {
     } else {
       G.confrontSel = [idx];
     }
-    highlightConfront();
+    // Mise à jour badges
+    document.querySelectorAll('#witness-cards .witness-card').forEach(card => {
+      const i = parseInt(card.dataset.idx);
+      card.classList.toggle('selected', G.confrontSel.includes(i));
+      card.querySelectorAll('.selected-badge').forEach(b => b.remove());
+      if (G.confrontSel.includes(i)) {
+        const badge = document.createElement('span');
+        badge.className = 'selected-badge';
+        badge.textContent = G.confrontSel.indexOf(i) === 0 ? 'T1' : 'T2';
+        card.appendChild(badge);
+      }
+    });
     updateConfrontForm();
-    return;
   }
 }
 
-// ─── Défense : afficher la zone de question ──────────────────
-function showQuestionInput(witnessIdx) {
-  const area = document.getElementById('question-area');
-  if (!area) return;
+// ─── Zone de question (Défense) ───────────────────────────────
+function openQuestionBox(witnessIdx) {
+  const box = document.getElementById('question-box');
+  if (!box) return;
   const w = G.state.witnesses[witnessIdx];
 
-  area.style.display = 'block';
-  area.innerHTML = `
-    <div class="question-area">
-      <h4>Interroger ${w.name}</h4>
-      <div class="question-input-row">
-        <input id="q-input" type="text" placeholder="Posez votre question…" />
-        <button class="btn-success" id="q-btn" ${G.actionsLeft <= 0 ? 'disabled' : ''}>Interroger</button>
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="question-box-inner">
+      <div class="qbox-title">Interroger <strong>${w.name}</strong></div>
+
+      <div class="quick-questions">
+        ${SUGGESTED_QUESTIONS.map(q =>
+          `<button class="q-chip" data-q="${q}">${q}</button>`
+        ).join('')}
       </div>
+
+      <div class="question-input-row">
+        <input id="q-input" type="text" placeholder="Ou écrivez votre propre question…" />
+        <button class="btn-success" id="q-btn" ${G.actionsLeft <= 0 ? 'disabled' : ''}>
+          Interroger
+        </button>
+      </div>
+      ${G.actionsLeft === 0 ? '<p class="no-actions-msg">Plus de questions disponibles.</p>' : ''}
     </div>`;
 
   const input = document.getElementById('q-input');
-  const btn   = document.getElementById('q-btn');
+  const qBtn  = document.getElementById('q-btn');
+
+  // Questions suggérées → remplissent l'input
+  box.querySelectorAll('.q-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      input.value = chip.dataset.q;
+      input.focus();
+    });
+  });
 
   input.focus();
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') qBtn.click(); });
 
-  btn.addEventListener('click', async () => {
+  qBtn.addEventListener('click', async () => {
     const q = input.value.trim();
-    if (!q) { toast('Saisissez une question.', 'error'); return; }
-    if (G.actionsLeft <= 0) { toast('Plus d\'actions disponibles.', 'error'); return; }
-    btn.disabled = true;
+    if (!q)               { toast('Écrivez une question.', 'error'); return; }
+    if (G.actionsLeft <= 0) { toast('Plus de questions disponibles.', 'error'); return; }
+
+    qBtn.disabled = true;
+    qBtn.textContent = '…';
+    setLoading(true);
 
     try {
       const result = await api('POST', `/${G.trialId}/question/${witnessIdx}`, { question: q });
       G.actionsLeft--;
-      updateActionsLeft();
+      G.lastResponse = result;
+
+      softRender(result.gameState);
+      renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.DEFENSE_CASE);
+
+      // Réafficher la réponse
       showWitnessResponse(result);
-      input.value = '';
-      render(result.gameState);
-      // Re-ouvrir la zone de question pour la même phase
-      setTimeout(() => {
-        G.selectedWitness = -1;
-        document.getElementById('question-area').style.display = 'none';
-      }, 50);
+
+      // Remettre l'input à zéro et ré-activer si actions restantes
+      input.value  = '';
+      input.focus();
+      qBtn.textContent = 'Interroger';
+      qBtn.disabled    = G.actionsLeft <= 0;
+
+      // Mettre à jour le message "plus d'actions"
+      const noMsg = box.querySelector('.no-actions-msg');
+      if (G.actionsLeft === 0) {
+        if (!noMsg) {
+          const p = document.createElement('p');
+          p.className = 'no-actions-msg';
+          p.textContent = 'Plus de questions disponibles.';
+          box.querySelector('.question-box-inner').appendChild(p);
+        }
+      } else if (noMsg) {
+        noMsg.remove();
+      }
+
+      // Highlight witness cards (état mis à jour)
+      document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
+        c.classList.toggle('selected', parseInt(c.dataset.idx) === witnessIdx);
+      });
     } catch (e) {
       toast('Erreur : ' + e.message, 'error');
-      btn.disabled = false;
+      qBtn.textContent = 'Interroger';
+      qBtn.disabled    = false;
+    } finally {
+      setLoading(false);
     }
   });
 }
 
-// Afficher la réponse du témoin
 function showWitnessResponse(result) {
   const area = document.getElementById('response-area');
   if (!area) return;
-
-  const cls = result.contradictionDetected ? 'response-box contradiction' : 'response-box';
-  const alert = result.contradictionDetected
-    ? `<div class="contradiction-alert">⚡ ${result.message}</div>`
-    : '';
-
+  const cls  = result.contradictionDetected ? 'response-box contradiction' : 'response-box';
   area.innerHTML = `
     <div class="${cls}">
       <div class="resp-name">
         ${result.contradictionDetected ? '⚡ Contradiction détectée !' : '💬 Réponse du témoin'}
       </div>
       <div class="resp-text">${result.witnessResponse || '—'}</div>
-      ${alert}
+      ${result.contradictionDetected
+        ? `<div class="contradiction-alert">⚡ ${result.message}</div>` : ''}
     </div>`;
 }
 
 // ─── Confrontation ────────────────────────────────────────────
-function highlightConfront() {
-  document.querySelectorAll('.witness-card').forEach(card => {
-    const idx = parseInt(card.dataset.idx);
-    card.classList.toggle('selected', G.confrontSel.includes(idx));
-    // Badge
-    card.querySelectorAll('.selected-badge').forEach(b => b.remove());
-    if (G.confrontSel.includes(idx)) {
-      const badge = document.createElement('span');
-      badge.className = 'selected-badge';
-      badge.textContent = G.confrontSel.indexOf(idx) === 0 ? 'T1' : 'T2';
-      card.appendChild(badge);
-    }
-  });
-}
-
-function highlightWitness(idx) {
-  document.querySelectorAll('.witness-card').forEach(card => {
-    card.classList.toggle('selected', parseInt(card.dataset.idx) === idx);
-  });
-}
-
 function updateConfrontForm() {
-  const form = document.getElementById('confront-form');
+  const form  = document.getElementById('confront-form');
+  const title = document.getElementById('confront-title');
   if (!form) return;
+
   const ready = G.confrontSel.length === 2;
-  form.style.display = ready ? 'block' : 'none';
+  form.classList.toggle('hidden', !ready);
 
   if (ready) {
     const w1 = G.state.witnesses[G.confrontSel[0]];
     const w2 = G.state.witnesses[G.confrontSel[1]];
-    form.querySelector('h4').textContent = `Confronter ${w1.name} et ${w2.name}`;
+    title.textContent = `Confronter ${w1.name} et ${w2.name}`;
 
     const btn = document.getElementById('confront-btn');
     if (btn) {
       btn.onclick = async () => {
-        const topic = document.getElementById('topic-input').value.trim() || 'leur déclaration';
-        if (G.actionsLeft <= 0) { toast('Plus d\'actions disponibles.', 'error'); return; }
+        if (G.actionsLeft <= 0) { toast('Plus de confrontations disponibles.', 'error'); return; }
+        const topic = (document.getElementById('topic-input')?.value.trim()) || 'leur déclaration';
         btn.disabled = true;
-
+        setLoading(true);
         try {
           const result = await api('POST', `/${G.trialId}/confront`, {
             witness1: G.confrontSel[0],
@@ -546,7 +635,8 @@ function updateConfrontForm() {
           });
           G.actionsLeft--;
           G.confrontSel = [];
-          updateActionsLeft();
+          softRender(result.gameState);
+          renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.CROSS_EXAMINATION);
 
           const area = document.getElementById('response-area');
           if (area) {
@@ -557,10 +647,17 @@ function updateConfrontForm() {
             </div>`;
           }
 
-          render(result.gameState);
+          // Désélectionner les témoins
+          document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
+            c.classList.remove('selected');
+            c.querySelectorAll('.selected-badge').forEach(b => b.remove());
+          });
+          form.classList.add('hidden');
         } catch (e) {
           toast('Erreur : ' + e.message, 'error');
           btn.disabled = false;
+        } finally {
+          setLoading(false);
         }
       };
     }
@@ -571,14 +668,18 @@ function updateConfrontForm() {
 //  Avancement de phase
 // ════════════════════════════════════════════════════════════
 async function advancePhase() {
+  setLoading(true);
   try {
     const state = await api('POST', `/${G.trialId}/next`);
     G.selectedWitness = -1;
-    G.confrontSel = [];
+    G.confrontSel     = [];
+    G.lastResponse    = null;
     setPhaseActions(state.phase);
     render(state);
   } catch (e) {
     toast('Erreur : ' + e.message, 'error');
+  } finally {
+    setLoading(false);
   }
 }
 
@@ -586,22 +687,18 @@ function setPhaseActions(phase) {
   G.actionsLeft = PHASE_MAX_ACTIONS[phase] ?? 0;
 }
 
-function updateActionsLeft() {
-  const badge = document.getElementById('actions-badge');
-  if (!badge) return;
-  const n = G.actionsLeft;
-  badge.textContent = `${n} action${n > 1 ? 's' : ''} restante${n > 1 ? 's' : ''}`;
-}
-
 // ════════════════════════════════════════════════════════════
 //  Verdict
 // ════════════════════════════════════════════════════════════
 async function triggerVerdict() {
+  setLoading(true);
   try {
     const verdict = await api('POST', `/${G.trialId}/verdict`);
     showVerdict(verdict);
   } catch (e) {
     toast('Erreur verdict : ' + e.message, 'error');
+  } finally {
+    setLoading(false);
   }
 }
 
@@ -611,10 +708,10 @@ function showVerdict(v) {
   const resultEl = document.getElementById('v-result');
   if (v.status === 'NOT_GUILTY') {
     resultEl.textContent = '✔ NON COUPABLE';
-    resultEl.className = 'verdict-result not-guilty';
+    resultEl.className   = 'verdict-result not-guilty';
   } else {
     resultEl.textContent = '✘ COUPABLE';
-    resultEl.className = 'verdict-result guilty';
+    resultEl.className   = 'verdict-result guilty';
   }
 
   // Jurés
@@ -628,36 +725,36 @@ function showVerdict(v) {
   document.getElementById('v-votes').textContent = v.guiltyVotes + '/' + v.totalJurors;
 
   // Score
-  const scoreFill = document.getElementById('v-score-fill');
-  scoreFill.style.width = '0%';
-  const scoreColor = v.playerScore >= 70 ? '#27ae60' : v.playerScore >= 40 ? '#f39c12' : '#e74c3c';
-  scoreFill.style.background = scoreColor;
+  const fill  = document.getElementById('v-score-fill');
+  const color = v.playerScore >= 70 ? '#27ae60' : v.playerScore >= 40 ? '#f39c12' : '#e74c3c';
+  fill.style.width      = '0%';
+  fill.style.background = color;
   document.getElementById('v-score').textContent = v.playerScore + '/100';
-  setTimeout(() => { scoreFill.style.width = v.playerScore + '%'; }, 200);
+  setTimeout(() => { fill.style.width = v.playerScore + '%'; }, 200);
 
   // Vérité
   const truth = document.getElementById('v-truth');
-  if (v.wasActuallyGuilty) {
-    truth.className = 'v-truth guilty-truth';
-    truth.textContent = '⚠ Votre client était réellement coupable.';
-  } else {
-    truth.className = 'v-truth innocent-truth';
-    truth.textContent = '✔ Votre client était réellement innocent !';
-  }
+  truth.className   = v.wasActuallyGuilty ? 'v-truth guilty-truth' : 'v-truth innocent-truth';
+  truth.textContent = v.wasActuallyGuilty
+    ? '⚠ Votre client était réellement coupable.'
+    : '✔ Votre client était réellement innocent !';
 
   document.getElementById('v-explanation').textContent = v.explanation;
-
   document.getElementById('verdict-overlay').classList.remove('hidden');
 }
 
 // ════════════════════════════════════════════════════════════
-//  Toast
+//  Utilitaires
 // ════════════════════════════════════════════════════════════
+function setLoading(on) {
+  document.body.style.cursor = on ? 'wait' : '';
+}
+
 let toastTimer = null;
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  el.className = 'toast' + (type ? ' ' + type : '');
+  el.className   = 'toast' + (type ? ' ' + type : '');
   el.classList.remove('hidden');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.add('hidden'), 3500);
