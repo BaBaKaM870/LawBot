@@ -6,7 +6,7 @@
   <title>LawBot — Simulation de Procès</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
 
@@ -22,6 +22,65 @@
         contestez les preuves et convainquez le jury de l'innocence de votre client.
       </p>
       <button class="btn-primary" id="start-btn">Commencer une Affaire</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ TUTORIAL OVERLAY ══════════════════ -->
+  <div id="tutorial-overlay" class="hidden">
+    <div class="tuto-box">
+      <div class="tuto-header">
+        <span class="tuto-icon">⚖</span>
+        <h2 class="tuto-title">Comment jouer&nbsp;?</h2>
+        <p class="tuto-intro">Vous incarnez l'avocat de la défense. Guidez votre client vers l'acquittement en six phases.</p>
+      </div>
+
+      <div class="tuto-phases">
+        <div class="tuto-phase">
+          <div class="tuto-phase-icon">📜</div>
+          <div class="tuto-phase-name">Ouverture</div>
+          <div class="tuto-phase-desc">Prenez connaissance de l'affaire et des accusations.</div>
+        </div>
+        <div class="tuto-phase">
+          <div class="tuto-phase-icon">⚔️</div>
+          <div class="tuto-phase-name">Accusation</div>
+          <div class="tuto-phase-desc">Contestez les preuves de la partie adverse.</div>
+        </div>
+        <div class="tuto-phase">
+          <div class="tuto-phase-icon">🛡️</div>
+          <div class="tuto-phase-name">Défense</div>
+          <div class="tuto-phase-desc">Interrogez vos témoins pour établir l'innocence.</div>
+        </div>
+        <div class="tuto-phase">
+          <div class="tuto-phase-icon">🔥</div>
+          <div class="tuto-phase-name">Contre-interro.</div>
+          <div class="tuto-phase-desc">Déstabilisez les témoins adverses.</div>
+        </div>
+        <div class="tuto-phase">
+          <div class="tuto-phase-icon">🎤</div>
+          <div class="tuto-phase-name">Plaidoirie</div>
+          <div class="tuto-phase-desc">Faites votre plaidoirie finale devant le jury.</div>
+        </div>
+        <div class="tuto-phase">
+          <div class="tuto-phase-icon">⚖️</div>
+          <div class="tuto-phase-name">Verdict</div>
+          <div class="tuto-phase-desc">Le jury délibère et rend son jugement.</div>
+        </div>
+      </div>
+
+      <div class="tuto-tips">
+        <h3 class="tuto-tips-title">Conseils</h3>
+        <ul>
+          <li>💡 Le jury commence à <strong>50 %</strong> de conviction — chaque action compte.</li>
+          <li>🔍 Les preuves marquées <strong>Douteux</strong> peuvent être fausses — contestez-les&nbsp;!</li>
+          <li>⚡ Confronter deux témoins peut révéler des <strong>contradictions</strong> décisives.</li>
+          <li>🎯 Posez des questions précises pour déstabiliser les témoins peu crédibles.</li>
+        </ul>
+      </div>
+
+      <div class="tuto-actions">
+        <button class="btn-secondary" id="tuto-skip-btn">Passer</button>
+        <button class="btn-primary" id="tuto-play-btn">Commencer le procès !</button>
+      </div>
     </div>
   </div>
 
@@ -122,6 +181,6 @@
   <!-- Toast notification -->
   <div id="toast" class="toast hidden"></div>
 
-  <script src="game.js"></script>
+  <script src="game.js?v=3"></script>
 </body>
 </html>
