@@ -644,12 +644,34 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   font-size: .9rem;
   color: var(--gold-light);
   margin-bottom: .85rem;
+  display: flex; justify-content: space-between; align-items: center;
 }
+.qbox-actions-left {
+  font-size: .75rem;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .15rem .55rem;
+}
+
+/* Questions suggérées par catégorie */
+.quick-questions-cats {
+  margin-bottom: .85rem;
+}
+.qcat-label {
+  font-size: .68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: .55rem 0 .3rem;
+}
+.qcat-label:first-child { margin-top: 0; }
 
 /* Questions suggérées (chips) */
 .quick-questions {
   display: flex; flex-wrap: wrap; gap: .4rem;
-  margin-bottom: .85rem;
+  margin-bottom: .1rem;
 }
 
 .q-chip {
@@ -665,9 +687,20 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   line-height: 1.4;
 }
 
-.q-chip:hover {
+.q-chip:hover:not(:disabled) {
   background: rgba(201,162,39,.22);
   border-color: var(--gold);
+}
+.q-chip:active:not(:disabled) {
+  transform: scale(.97);
+}
+.q-chip:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+.qbox-actions-left.exhausted {
+  color: var(--red);
+  border-color: rgba(231,76,60,.4);
 }
 
 /* Input de question */
@@ -1180,4 +1213,108 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   .tuto-box { padding: 1.8rem 1.2rem 1.4rem; }
   .tuto-actions { flex-direction: column; }
   .btn-secondary, .tuto-actions .btn-primary { width: 100%; text-align: center; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Session Stats (Welcome Screen)
+═══════════════════════════════════════════════════════════ */
+.session-stats {
+  display: flex; gap: .6rem; justify-content: center; align-items: center;
+  font-size: .82rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+  min-height: 1.2rem;
+}
+.sess-win   { color: var(--green); font-weight: 600; }
+.sess-loss  { color: var(--red);   font-weight: 600; }
+.sess-total { color: var(--text-muted); }
+.sess-sep   { color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════════════════════
+   Keyboard Shortcut Hint Badge
+═══════════════════════════════════════════════════════════ */
+.kbd-hint {
+  position: absolute; top: .5rem; right: .5rem;
+  background: rgba(201,162,39,.2); border: 1px solid rgba(201,162,39,.4);
+  color: var(--gold); border-radius: 4px;
+  font-size: .65rem; font-weight: 700; padding: .1rem .35rem;
+  font-family: var(--font-sans);
+}
+.witness-card, .evidence-card { position: relative; }
+
+/* ═══════════════════════════════════════════════════════════
+   Evidence Danger Tag
+═══════════════════════════════════════════════════════════ */
+.tag-danger {
+  background: rgba(231,76,60,.25); border: 1px solid #e74c3c;
+  color: #ff6b6b; font-weight: 700;
+  animation: pulse-danger 1.5s ease-in-out infinite;
+}
+@keyframes pulse-danger {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .6; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Closing Strategy Grid
+═══════════════════════════════════════════════════════════ */
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.strategy-card {
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 1.2rem;
+  cursor: pointer; transition: border-color .2s, transform .15s, background .2s;
+  text-align: center;
+}
+.strategy-card:hover {
+  border-color: var(--gold); background: var(--bg-card-h);
+  transform: translateY(-2px);
+}
+.strategy-card.selected {
+  border-color: var(--gold); background: var(--gold-dim);
+  box-shadow: 0 0 16px rgba(201,162,39,.3);
+}
+.strategy-icon { font-size: 2rem; margin-bottom: .5rem; }
+.strategy-name { font-family: var(--font-serif); font-weight: 700; color: var(--gold-light); margin-bottom: .4rem; }
+.strategy-desc { font-size: .82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: .6rem; }
+.strategy-effect { font-size: .75rem; color: var(--gold); font-weight: 600; }
+
+.chosen-strategy {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.2rem 1.5rem;
+  margin-top: .5rem; display: flex; flex-direction: column; gap: 1rem;
+  animation: slideDown .25s ease;
+}
+.chosen-text { color: var(--text); font-style: italic; line-height: 1.6; }
+
+/* ═══════════════════════════════════════════════════════════
+   Verdict Grade Badge
+═══════════════════════════════════════════════════════════ */
+.verdict-grade-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1rem; margin: 1.25rem 0 .75rem;
+}
+.verdict-grade-badge {
+  font-family: var(--font-serif); font-size: 3rem; font-weight: 700;
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 3px solid; display: flex; align-items: center; justify-content: center;
+  animation: scaleIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+.verdict-grade-label {
+  font-family: var(--font-serif); font-size: 1.1rem;
+  color: var(--text); font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Verdict Feedback Points
+═══════════════════════════════════════════════════════════ */
+.verdict-feedback {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .9rem 1.2rem;
+  margin-bottom: .75rem; display: flex; flex-direction: column; gap: .4rem;
+}
+.feedback-item {
+  font-size: .85rem; color: var(--text); line-height: 1.5;
+  padding-left: .25rem;
 }

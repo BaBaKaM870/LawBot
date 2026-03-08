@@ -4,13 +4,27 @@ import dto.VerdictDTO;
 import model.*;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class VerdictService {
 
     private static final double GUILT_THRESHOLD = 0.65;
     private static final double ACQUITTAL_THRESHOLD = 0.35;
+    private static final Random random = new Random();
+
+    private static final String[] JURY_COMMENTS = {
+        "Le juré n°3 a failli s'endormir pendant les plaidoiries.",
+        "Le jury a délibéré 12 minutes, dont 8 pour commander des sandwichs.",
+        "Le juré n°5 aurait voté en lançant une pièce selon une source anonyme.",
+        "Le jury était partagé jusqu'à ce que quelqu'un crie « On rentre dîner ! ».",
+        "Le juré n°1 a renversé son café au moment crucial — coïncidence ?",
+        "D'après des sources, le juré n°6 pensait assister à un concours de pâtisserie.",
+        "Le juré n°2 a demandé à trois reprises si l'accusé était 'celui de la télé'.",
+        "Le juré n°4 a voté en regardant ostensiblement ses chaussures.",
+    };
 
     /**
      * Calcule le verdict final à partir de l'état du procès.
@@ -130,8 +144,59 @@ public class VerdictService {
         boolean wasActuallyGuilty = currentCase.getSuspect() != null
             && currentCase.getSuspect().isGuilty();
 
+        String grade    = computeGrade(playerScore);
+        List<String> feedback = buildFeedback(score, evidenceScore, witnessScore, juryScore, trial);
+
         return new VerdictDTO(status, explanation, playerScore, guiltyVotes, totalJurors,
-                              suspectName, wasActuallyGuilty);
+                              suspectName, wasActuallyGuilty, grade, feedback);
+    }
+
+    private String computeGrade(int playerScore) {
+        if (playerScore >= 80) return "S";
+        if (playerScore >= 65) return "A";
+        if (playerScore >= 50) return "B";
+        if (playerScore >= 35) return "C";
+        if (playerScore >= 20) return "D";
+        return "F";
+    }
+
+    private List<String> buildFeedback(double finalScore, double evidenceScore,
+                                       double witnessScore, double juryScore, Trial trial) {
+        List<String> points = new ArrayList<>();
+
+        if (evidenceScore > 0.65) {
+            points.add("⚠ Les preuves à charge étaient très solides — contestez plus de preuves douteuses.");
+        } else {
+            points.add("✔ Bonne gestion des preuves : vous avez bien neutralisé l'accusation.");
+        }
+
+        if (witnessScore > 0.65) {
+            points.add("⚠ Les témoins sont restés trop crédibles — posez des questions plus déstabilisantes.");
+        } else {
+            points.add("✔ Vous avez sérieusement entamé la crédibilité des témoins.");
+        }
+
+        if (juryScore > 0.65) {
+            points.add("⚠ Le jury n'a pas été convaincu — ciblez mieux les preuves et les contradictions.");
+        } else if (juryScore < 0.35) {
+            points.add("✔ Le jury a clairement pris votre parti !");
+        }
+
+        int total = trial.getTotalActionsCount();
+        if (total > 0) {
+            int ratio = (int) ((double) trial.getSuccessfulActionsCount() / total * 100);
+            if (ratio >= 60) {
+                points.add("✔ Précision exemplaire : " + ratio + "% d'actions réussies.");
+            } else if (ratio < 30) {
+                points.add("⚠ Seulement " + ratio + "% d'actions réussies — analysez mieux avant d'agir.");
+            }
+        }
+
+        if (points.isEmpty()) {
+            points.add("💡 Procès serré. Cherchez les preuves douteuses et les témoins peu fiables.");
+        }
+
+        return points;
     }
 
     private String determineSentence(double score, Case.CrimeType crimeType) {
@@ -146,10 +211,11 @@ public class VerdictService {
 
     private String buildExplanation(double finalScore, double evidenceScore,
                                     double witnessScore, double juryScore) {
+        String juryComment = JURY_COMMENTS[random.nextInt(JURY_COMMENTS.length)];
         return String.format(
-            "Score final : %.0f%%. Preuves à charge : %.0f%%. " +
-            "Crédibilité des témoins : %.0f%%. Conviction du jury : %.0f%%.",
-            finalScore * 100, evidenceScore * 100, witnessScore * 100, juryScore * 100
+            "Score final : %.0f%% | Preuves : %.0f%% | Témoins : %.0f%% | Jury : %.0f%% — %s",
+            finalScore * 100, evidenceScore * 100, witnessScore * 100, juryScore * 100,
+            juryComment
         );
     }
 }

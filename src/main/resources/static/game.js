@@ -12,6 +12,9 @@ const G = {
   lastResponse:    null,   // Dernière réponse du témoin (persistante)
 };
 
+// Statistiques de la session en cours
+const SESSION = { wins: 0, losses: 0 };
+
 const PHASE_MAX_ACTIONS = {
   PROSECUTION_CASE:  3,
   DEFENSE_CASE:      5,
@@ -27,16 +30,58 @@ const CRIME_FR = {
   THEFT: 'Vol', ASSAULT: 'Agression', CORRUPTION: 'Corruption'
 };
 
-// Questions suggérées pour la défense
-const SUGGESTED_QUESTIONS = [
-  'Où étiez-vous au moment des faits ?',
-  'Connaissez-vous personnellement l\'accusé(e) ?',
-  'Êtes-vous certain(e) de ce que vous avez vu ?',
-  'Aviez-vous des raisons de mentir ?',
-  'Votre témoignage a-t-il changé depuis la première audition ?',
-  'Quelqu\'un vous a-t-il influencé avant de témoigner ?',
-  'Pouvez-vous décrire précisément ce que vous avez vu ?',
+// Grades et libellés
+const GRADE_COLORS  = { S:'#ffd700', A:'#27ae60', B:'#3498db', C:'#f39c12', D:'#e67e22', F:'#e74c3c' };
+const GRADE_LABELS  = {
+  S: 'Maître Défenseur',      A: 'Excellent Avocat',
+  B: 'Bon Défenseur',         C: 'Défense Correcte',
+  D: 'Défense Insuffisante',  F: 'Plaidoirie Catastrophique'
+};
+
+// Stratégies de plaidoirie finale
+const STRATEGIES = [
+  { id:'evidence',  icon:'📋', name:'Attaquer les Preuves',
+    desc:'Remettez en cause chaque preuve de l\'accusation. Efficace si vous avez bien travaillé en amont.',
+    effect:'Renforce vos contestations précédentes' },
+  { id:'character', icon:'💛', name:'Humaniser l\'Accusé(e)',
+    desc:'Montrez le côté humain de votre client. Faites appel à l\'empathie des jurés.',
+    effect:'Réduit le biais émotionnel du jury' },
+  { id:'doubt',     icon:'⚖',  name:'Le Doute Raisonnable',
+    desc:'L\'argument classique : sans certitude absolue, l\'innocence prime. Solide et éprouvé.',
+    effect:'Fiable dans toutes les situations' },
+  { id:'dramatic',  icon:'⚡', name:'Coup de Théâtre',
+    desc:'Une révélation de dernière minute. Risqué mais potentiellement décisif. Le juré n°4 se réveille.',
+    effect:'Effet surprise — résultat imprévisible' },
 ];
+
+// Questions suggérées par catégorie (alibi, crédibilité, observation, motif, timeline, confrontation)
+const SUGGESTED_QUESTIONS = {
+  alibi: [
+    'Où étiez-vous exactement au moment des faits ?',
+    'Pouvez-vous prouver où vous vous trouviez ce soir-là ?',
+    'Avez-vous un alibi vérifiable pour cette période ?',
+  ],
+  credibility: [
+    'Votre témoignage a-t-il changé depuis votre première déposition ?',
+    'Quelqu\'un vous a-t-il influencé avant de témoigner ?',
+    'Aviez-vous des raisons personnelles de mentir ici ?',
+  ],
+  observation: [
+    'Êtes-vous certain(e) de ce que vous avez vu dans ces conditions ?',
+    'Pouvez-vous décrire précisément ce que vous avez observé ?',
+    'La lumière et la distance vous permettaient-ils vraiment de voir ?',
+  ],
+  motive: [
+    'Pourquoi témoignez-vous contre l\'accusé(e) ?',
+    'Avez-vous un intérêt personnel dans le résultat de ce procès ?',
+    'Quelle est votre relation réelle avec la victime ?',
+  ],
+  timeline: [
+    'À quelle heure précise avez-vous vu cela ?',
+    'Combien de temps s\'est-il écoulé entre les faits et votre appel ?',
+    'Étiez-vous présent(e) depuis le début ou arrivé(e) après ?',
+  ],
+};
 
 // ════════════════════════════════════════════════════════════
 //  API
@@ -57,6 +102,27 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('replay-btn').addEventListener('click', replayGame);
   document.getElementById('tuto-skip-btn').addEventListener('click', launchGame);
   document.getElementById('tuto-play-btn').addEventListener('click', launchGame);
+});
+
+// Raccourcis clavier : touches 1-9 pour sélectionner témoins/preuves
+document.addEventListener('keydown', e => {
+  if (!G.state) return;
+  // Ignorer si on tape dans un input/textarea
+  if (['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
+  const num = parseInt(e.key);
+  if (isNaN(num) || num < 1 || num > 9) return;
+  const idx = num - 1;
+  const phase = G.state.phase;
+  if (phase === 'PROSECUTION_CASE') {
+    if (idx < G.state.evidences.length && G.actionsLeft > 0
+        && !G.state.evidences[idx].contested) {
+      onContest(idx);
+    }
+  } else if (phase === 'DEFENSE_CASE' || phase === 'CROSS_EXAMINATION') {
+    if (idx < G.state.witnesses.length) {
+      onWitnessClick(idx);
+    }
+  }
 });
 
 function showTutorial() {
@@ -247,7 +313,7 @@ function renderDefense(panel, state) {
         <strong>Défense — Interrogez les témoins</strong>
         <p>
           <strong>Cliquez sur un témoin</strong> pour l'interroger.
-          Choisissez une question suggérée ou écrivez la vôtre.
+          Choisissez une question dans les catégories proposées.
           Cherchez des contradictions dans leurs déclarations !
         </p>
       </div>
@@ -264,7 +330,7 @@ function renderDefense(panel, state) {
     <div id="response-area"></div>
 
     <div class="next-bar">
-      <button class="btn-outline" id="next-btn">Contre-interrogatoire →</button>
+      <button class="btn-outline" id="next-btn">Passer aux plaidoiries →</button>
     </div>`;
 
   renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.DEFENSE_CASE);
@@ -318,36 +384,64 @@ function renderClosing(panel, state) {
     <div class="phase-guide guide-gold">
       <span class="guide-icon">🎤</span>
       <div>
-        <strong>Plaidoiries finales — Convaincre le jury</strong>
-        <p>Rédigez votre plaidoirie finale pour défendre votre client. Ce texte est cosmétique, mais profitez-en pour récapituler vos arguments avant le verdict !</p>
+        <strong>Plaidoiries finales — Choisissez votre stratégie</strong>
+        <p>Le jury vous regarde. Le juré n°4 a faim. Choisissez votre approche avec soin.</p>
       </div>
     </div>
 
-    <div class="plea-section">
-      <h3>Votre plaidoirie</h3>
-      <p>Membres du jury, vous avez entendu les témoignages et vu les preuves. Il est temps de délibérer.</p>
-      <textarea id="plea-input" placeholder="Membres du jury, mon client est innocent car…"></textarea>
-      <button class="btn-primary" id="verdict-btn">⚖ Rendre le verdict</button>
+    <div class="section-label">Votre approche de plaidoirie</div>
+    <div class="strategy-grid" id="strategy-grid">
+      ${STRATEGIES.map(s => `
+        <div class="strategy-card" data-id="${s.id}">
+          <div class="strategy-icon">${s.icon}</div>
+          <div class="strategy-name">${s.name}</div>
+          <div class="strategy-desc">${s.desc}</div>
+          <div class="strategy-effect">→ ${s.effect}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="chosen-strategy hidden" id="chosen-block">
+      <div class="chosen-text" id="chosen-text"></div>
+      <button class="btn-primary" id="verdict-btn">⚖ Prononcer la plaidoirie et rendre le verdict</button>
     </div>`;
 
-  document.getElementById('verdict-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('verdict-btn');
-    btn.disabled = true;
-    btn.textContent = 'Le jury délibère…';
-    try {
-      const verdict = await api('POST', `/${G.trialId}/verdict`);
-      showVerdict(verdict);
-    } catch (e) {
-      toast('Erreur : ' + e.message, 'error');
-      btn.disabled = false;
-      btn.textContent = '⚖ Rendre le verdict';
-    }
+  panel.querySelectorAll('.strategy-card').forEach(card => {
+    card.addEventListener('click', () => {
+      panel.querySelectorAll('.strategy-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const s = STRATEGIES.find(x => x.id === card.dataset.id);
+      document.getElementById('chosen-text').textContent =
+        `Stratégie choisie : « ${s.name} » — ${s.desc}`;
+      document.getElementById('chosen-block').classList.remove('hidden');
+
+      const btn = document.getElementById('verdict-btn');
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.textContent = 'Le jury délibère…';
+        try {
+          const verdict = await api('POST', `/${G.trialId}/verdict`);
+          showVerdict(verdict);
+        } catch (e) {
+          toast('Erreur : ' + e.message, 'error');
+          btn.disabled = false;
+          btn.textContent = '⚖ Prononcer la plaidoirie et rendre le verdict';
+        }
+      };
+    });
   });
 }
 
 // ════════════════════════════════════════════════════════════
 //  Sous-composants
 // ════════════════════════════════════════════════════════════
+
+function witnessEmoji(credibility, stressPct) {
+  if (stressPct > 70) return '😰';
+  if (credibility < 30) return '🤥';
+  if (credibility >= 75) return '🧑‍⚖️';
+  if (stressPct > 45) return '😤';
+  return '👤';
+}
 
 function renderActionDots(left, max) {
   const el = document.getElementById('action-dots');
@@ -364,18 +458,21 @@ function renderWitnessCards(selector, state, clickable) {
   const container = document.querySelector(selector);
   if (!container) return;
 
-  container.innerHTML = state.witnesses.map(w => {
+  container.innerHTML = state.witnesses.map((w, listIdx) => {
     const credPct   = w.credibility;
     const credColor = credPct >= 70 ? '#27ae60' : credPct >= 40 ? '#f39c12' : '#e74c3c';
     const stressPct = Math.round(w.stressLevel * 100);
     const stressCol = stressPct < 30 ? '#27ae60' : stressPct < 60 ? '#f39c12' : '#e74c3c';
     const isSelected = G.confrontSel.includes(w.index) ||
                        G.selectedWitness === w.index;
+    const emoji = witnessEmoji(credPct, stressPct);
+    const shortcut = clickable ? `<span class="kbd-hint">${listIdx + 1}</span>` : '';
 
     return `<div class="witness-card${clickable ? ' clickable' : ''}${isSelected ? ' selected' : ''}"
                  data-idx="${w.index}" title="${clickable ? 'Cliquer pour sélectionner ce témoin' : ''}">
+      ${shortcut}
       ${clickable ? `<div class="witness-hint">👆 Cliquer pour interroger</div>` : ''}
-      <div class="witness-name">${w.name}</div>
+      <div class="witness-name">${emoji} ${w.name}</div>
       <div class="witness-job">${w.profession || '—'}</div>
       ${w.initialStatement ? `<div class="witness-stmt">« ${w.initialStatement} »</div>` : ''}
       <div class="meter-row">
@@ -402,16 +499,19 @@ function renderEvidenceCards(selector, state, withContestBtn) {
   const container = document.querySelector(selector);
   if (!container) return;
 
-  container.innerHTML = state.evidences.map(e => {
+  container.innerHTML = state.evidences.map((e, listIdx) => {
     const pct  = Math.round(e.weight * 100);
     const cls  = e.contested
       ? 'evidence-card contested'
       : e.authentic ? 'evidence-card authentic' : 'evidence-card fake';
 
     const tags = [];
+    if (e.authentic && pct >= 75) tags.push('<span class="tag tag-danger">🚨 CRITIQUE</span>');
     if (e.authentic) tags.push('<span class="tag tag-red">Authentique</span>');
-    else             tags.push('<span class="tag tag-green">Douteux ← à contester !</span>');
-    if (e.contested) tags.push('<span class="tag tag-gold">✔ Contesté</span>');
+    else if (!e.contested) tags.push('<span class="tag tag-green">💡 À contester !</span>');
+    else tags.push('<span class="tag tag-green">Douteux</span>');
+    if (e.contested) tags.push('<span class="tag tag-gold">✔ Neutralisé</span>');
+    const shortcut = withContestBtn && !e.contested ? `<span class="kbd-hint">${listIdx + 1}</span>` : '';
 
     const canContest = withContestBtn && !e.contested && G.actionsLeft > 0;
     const btn = canContest
@@ -423,6 +523,7 @@ function renderEvidenceCards(selector, state, withContestBtn) {
           : '';
 
     return `<div class="${cls}">
+      ${shortcut}
       <div class="evidence-desc">${e.description}</div>
       <div class="evidence-tags">${tags.join('')}</div>
       <div class="meter-row">
@@ -514,91 +615,73 @@ function openQuestionBox(witnessIdx) {
   if (!box) return;
   const w = G.state.witnesses[witnessIdx];
 
+  rebuildQuestionBox(box, witnessIdx, w);
+}
+
+function rebuildQuestionBox(box, witnessIdx, w) {
+  const disabled = G.actionsLeft <= 0;
   box.classList.remove('hidden');
+
+  const makeChips = (questions) => questions.map(q =>
+    `<button class="q-chip${disabled ? ' q-chip-disabled' : ''}" data-q="${q}" ${disabled ? 'disabled' : ''}>${q}</button>`
+  ).join('');
+
   box.innerHTML = `
     <div class="question-box-inner">
-      <div class="qbox-title">Interroger <strong>${w.name}</strong></div>
-
-      <div class="quick-questions">
-        ${SUGGESTED_QUESTIONS.map(q =>
-          `<button class="q-chip" data-q="${q}">${q}</button>`
-        ).join('')}
+      <div class="qbox-title">Interroger <strong>${w.name}</strong>
+        <span class="qbox-actions-left${disabled ? ' exhausted' : ''}">${G.actionsLeft} question${G.actionsLeft !== 1 ? 's' : ''} restante${G.actionsLeft !== 1 ? 's' : ''}</span>
       </div>
-
-      <div class="question-input-row">
-        <input id="q-input" type="text" placeholder="Ou écrivez votre propre question…" />
-        <button class="btn-success" id="q-btn" ${G.actionsLeft <= 0 ? 'disabled' : ''}>
-          Interroger
-        </button>
+      ${disabled ? '<p class="no-actions-msg">Plus de questions disponibles pour ce témoin.</p>' : ''}
+      <div class="quick-questions-cats">
+        <div class="qcat-label">Alibi &amp; présence</div>
+        <div class="quick-questions">${makeChips(SUGGESTED_QUESTIONS.alibi)}</div>
+        <div class="qcat-label">Crédibilité</div>
+        <div class="quick-questions">${makeChips(SUGGESTED_QUESTIONS.credibility)}</div>
+        <div class="qcat-label">Observations &amp; faits</div>
+        <div class="quick-questions">${makeChips(SUGGESTED_QUESTIONS.observation)}</div>
+        <div class="qcat-label">Motif &amp; relations</div>
+        <div class="quick-questions">${makeChips(SUGGESTED_QUESTIONS.motive)}</div>
+        <div class="qcat-label">Chronologie</div>
+        <div class="quick-questions">${makeChips(SUGGESTED_QUESTIONS.timeline)}</div>
       </div>
-      ${G.actionsLeft === 0 ? '<p class="no-actions-msg">Plus de questions disponibles.</p>' : ''}
     </div>`;
 
-  const input = document.getElementById('q-input');
-  const qBtn  = document.getElementById('q-btn');
+  if (disabled) return;
 
-  // Questions suggérées → remplissent l'input
   box.querySelectorAll('.q-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      input.value = chip.dataset.q;
-      input.focus();
+    chip.addEventListener('click', () => askQuestion(chip.dataset.q, witnessIdx, box, w));
+  });
+}
+
+async function askQuestion(question, witnessIdx, box, w) {
+  if (G.actionsLeft <= 0) return;
+
+  // Désactiver tous les chips pendant la requête
+  box.querySelectorAll('.q-chip').forEach(c => c.disabled = true);
+  setLoading(true);
+
+  try {
+    const result = await api('POST', `/${G.trialId}/question/${witnessIdx}`, { question });
+    G.actionsLeft--;
+    G.lastResponse = result;
+
+    softRender(result.gameState);
+    renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.DEFENSE_CASE);
+    showWitnessResponse(result);
+
+    // Reconstruire la boîte (met à jour le compteur et désactive si épuisé)
+    rebuildQuestionBox(box, witnessIdx, w);
+
+    // Garder le témoin sélectionné
+    document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
+      c.classList.toggle('selected', parseInt(c.dataset.idx) === witnessIdx);
     });
-  });
-
-  input.focus();
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') qBtn.click(); });
-
-  qBtn.addEventListener('click', async () => {
-    const q = input.value.trim();
-    if (!q)               { toast('Écrivez une question.', 'error'); return; }
-    if (G.actionsLeft <= 0) { toast('Plus de questions disponibles.', 'error'); return; }
-
-    qBtn.disabled = true;
-    qBtn.textContent = '…';
-    setLoading(true);
-
-    try {
-      const result = await api('POST', `/${G.trialId}/question/${witnessIdx}`, { question: q });
-      G.actionsLeft--;
-      G.lastResponse = result;
-
-      softRender(result.gameState);
-      renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.DEFENSE_CASE);
-
-      // Réafficher la réponse
-      showWitnessResponse(result);
-
-      // Remettre l'input à zéro et ré-activer si actions restantes
-      input.value  = '';
-      input.focus();
-      qBtn.textContent = 'Interroger';
-      qBtn.disabled    = G.actionsLeft <= 0;
-
-      // Mettre à jour le message "plus d'actions"
-      const noMsg = box.querySelector('.no-actions-msg');
-      if (G.actionsLeft === 0) {
-        if (!noMsg) {
-          const p = document.createElement('p');
-          p.className = 'no-actions-msg';
-          p.textContent = 'Plus de questions disponibles.';
-          box.querySelector('.question-box-inner').appendChild(p);
-        }
-      } else if (noMsg) {
-        noMsg.remove();
-      }
-
-      // Highlight witness cards (état mis à jour)
-      document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
-        c.classList.toggle('selected', parseInt(c.dataset.idx) === witnessIdx);
-      });
-    } catch (e) {
-      toast('Erreur : ' + e.message, 'error');
-      qBtn.textContent = 'Interroger';
-      qBtn.disabled    = false;
-    } finally {
-      setLoading(false);
-    }
-  });
+  } catch (e) {
+    toast('Erreur : ' + e.message, 'error');
+    box.querySelectorAll('.q-chip').forEach(c => c.disabled = false);
+  } finally {
+    setLoading(false);
+  }
 }
 
 function showWitnessResponse(result) {
@@ -749,8 +832,40 @@ function showVerdict(v) {
     ? '⚠ Votre client était réellement coupable.'
     : '✔ Votre client était réellement innocent !';
 
+  // Grade
+  const gradeEl    = document.getElementById('v-grade');
+  const gradeLblEl = document.getElementById('v-grade-label');
+  const gc = GRADE_COLORS[v.grade] || '#aaa';
+  gradeEl.textContent    = v.grade || '?';
+  gradeEl.style.color    = gc;
+  gradeEl.style.borderColor = gc;
+  gradeLblEl.textContent = GRADE_LABELS[v.grade] || '';
+
+  // Feedback
+  const fbEl = document.getElementById('v-feedback');
+  fbEl.innerHTML = (v.feedback || []).map(f => `<div class="feedback-item">${f}</div>`).join('');
+
   document.getElementById('v-explanation').textContent = v.explanation;
+
+  // Statistiques de session
+  if (v.status === 'NOT_GUILTY') SESSION.wins++;
+  else SESSION.losses++;
+  updateSessionStats();
+
   document.getElementById('verdict-overlay').classList.remove('hidden');
+}
+
+function updateSessionStats() {
+  const el = document.getElementById('session-stats');
+  if (!el) return;
+  const total = SESSION.wins + SESSION.losses;
+  if (total === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <span class="sess-win">⚖ ${SESSION.wins} victoire${SESSION.wins !== 1 ? 's' : ''}</span>
+    <span class="sess-sep">·</span>
+    <span class="sess-loss">${SESSION.losses} défaite${SESSION.losses !== 1 ? 's' : ''}</span>
+    <span class="sess-sep">·</span>
+    <span class="sess-total">${total} affaire${total !== 1 ? 's' : ''}</span>`;
 }
 
 // ════════════════════════════════════════════════════════════

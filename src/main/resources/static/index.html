@@ -6,7 +6,7 @@
   <title>LawBot — Simulation de Procès</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=8" />
 </head>
 <body>
 
@@ -17,6 +17,7 @@
       <div class="welcome-gavel">⚖</div>
       <h1>LAWBOT</h1>
       <p class="welcome-tagline">Simulation de Procès</p>
+      <div class="session-stats" id="session-stats"></div>
       <p class="welcome-intro">
         Incarnez l'avocat de la défense. Interrogez les témoins,
         contestez les preuves et convainquez le jury de l'innocence de votre client.
@@ -70,7 +71,7 @@
       <div class="tuto-tips">
         <h3 class="tuto-tips-title">Conseils</h3>
         <ul>
-          <li>💡 Le jury commence à <strong>50 %</strong> de conviction — chaque action compte.</li>
+          <li>💡 Le jury part penché vers la culpabilité — chaque action compte.</li>
           <li>🔍 Les preuves marquées <strong>Douteux</strong> peuvent être fausses — contestez-les&nbsp;!</li>
           <li>⚡ Confronter deux témoins peut révéler des <strong>contradictions</strong> décisives.</li>
           <li>🎯 Posez des questions précises pour déstabiliser les témoins peu crédibles.</li>
@@ -172,6 +173,13 @@
 
       </div>
 
+      <div class="verdict-grade-row">
+        <div class="verdict-grade-badge" id="v-grade"></div>
+        <div class="verdict-grade-label" id="v-grade-label"></div>
+      </div>
+
+      <div class="verdict-feedback" id="v-feedback"></div>
+
       <p class="verdict-explanation" id="v-explanation"></p>
 
       <button class="btn-primary btn-replay" id="replay-btn">🔄 Nouvelle Affaire</button>
@@ -181,6 +189,6 @@
   <!-- Toast notification -->
   <div id="toast" class="toast hidden"></div>
 
-  <script src="game.js?v=3"></script>
+  <script src="game.js?v=8"></script>
 </body>
 </html>

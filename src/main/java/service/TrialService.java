@@ -108,7 +108,7 @@ public class TrialService {
 
         if (response.contradictionDetected()) {
             trial.setSuccessfulActionsCount(trial.getSuccessfulActionsCount() + 1);
-            verdictService.updateJuryConviction(trial.getLawCase().getJury(), 0.08, true);
+            verdictService.updateJuryConviction(trial.getLawCase().getJury(), 0.05, true);
             trial.addEvent("Contradiction révélée sur le témoin " + witness.getName());
         } else {
             trial.addEvent("Question posée à " + witness.getName());
@@ -159,7 +159,7 @@ public class TrialService {
 
         if (!evidence.isAuthentic()) {
             trial.setSuccessfulActionsCount(trial.getSuccessfulActionsCount() + 1);
-            verdictService.updateJuryConviction(trial.getLawCase().getJury(), 0.12, true);
+            verdictService.updateJuryConviction(trial.getLawCase().getJury(), 0.08, true);
             trial.addEvent("Preuve invalide exposée : " + evidence.getDescription());
         } else {
             trial.addEvent("Contestation rejetée : " + evidence.getDescription());

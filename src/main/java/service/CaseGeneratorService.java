@@ -17,14 +17,15 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "Le Meurtre au Manoir",
             "Loris Lebelge est accusé du meurtre de son associé Ugo Ferri, " +
-            "retrouvé mort dans son bureau avec une blessure par arme blanche.",
+            "retrouvé mort dans son bureau avec une blessure par arme blanche. " +
+            "Les deux hommes se disputaient depuis des semaines à propos d'un investissement raté dans une fromagerie normande.",
             "Loris Lebelge",
             Case.CrimeType.MURDER,
             List.of(
                 new WitnessTemplate("Marie Dupont", "Secrétaire",
-                    "J'ai entendu des cris vers 22h, puis plus rien. M. Lebelge est parti très agité.", true),
+                    "J'ai entendu des cris vers 22h, puis plus rien. M. Lebelge est parti très agité — et sans son parapluie, ce qui est inhabituel chez lui.", true),
                 new WitnessTemplate("Paul Bernard", "Voisin",
-                    "J'ai vu une silhouette quitter le bâtiment en courant. Je n'ai pas bien vu le visage.", false)
+                    "J'ai vu une silhouette quitter le bâtiment en courant. Je n'ai pas bien vu le visage, mais il portait des chaussettes dépareillées — détail qui m'a frappé.", false)
             ),
             List.of(
                 new EvidenceTemplate("Couteau ensanglanté portant des empreintes", 0.85, true),
@@ -36,16 +37,17 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "Le Meurtre à l'Hôtel des Arts",
             "Camille Beaumont est accusée d'avoir empoisonné son mari René, " +
-            "producteur de cinéma, retrouvé mort dans leur suite d'hôtel parisienne.",
+            "producteur de cinéma réputé pour ses critiques mordantes et sa passion pour les minibars d'hôtel, " +
+            "retrouvé mort dans leur suite parisienne. Les médecins ont d'abord cru à une overdose de champagne.",
             "Camille Beaumont",
             Case.CrimeType.MURDER,
             List.of(
                 new WitnessTemplate("Hugo Petit", "Serveur de l'hôtel",
-                    "J'ai vu Mme Beaumont commander une bouteille de vin et retourner seule dans la suite vers 23h.", true),
+                    "J'ai vu Mme Beaumont commander une bouteille de vin et retourner seule dans la suite vers 23h. Elle avait l'air très... détendue.", true),
                 new WitnessTemplate("Diane Lefèvre", "Amie du couple",
-                    "René et Camille s'entendaient parfaitement, c'était un couple modèle. Aucun problème.", false),
+                    "René et Camille s'entendaient parfaitement, c'était un couple modèle. Aucun problème. (Sauf lors de la dispute du buffet de leur mariage, mais ça n'a aucun rapport.)", false),
                 new WitnessTemplate("Pr. Laurent Girard", "Toxicologue",
-                    "Les analyses révèlent une dose mortelle d'arsenic dans le sang de la victime.", true)
+                    "Les analyses révèlent une dose mortelle d'arsenic dans le sang de la victime. J'ai vérifié deux fois parce que c'est quand même assez classique comme méthode.", true)
             ),
             List.of(
                 new EvidenceTemplate("Flacon d'arsenic retrouvé dans le sac de l'accusée", 0.88, true),
@@ -58,16 +60,18 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "L'Incendie Criminel",
             "Patricia Vidal est accusée d'avoir volontairement incendié l'entrepôt " +
-            "de son ex-associé, causant la mort du gardien de nuit Karim Azizi.",
+            "de son ex-associé, causant la mort du gardien de nuit Karim Azizi. " +
+            "L'entrepôt stockait principalement des chaises en plastique orange et 400 boîtes de haricots verts — " +
+            "personne n'a vraiment compris la valeur de l'affaire.",
             "Patricia Vidal",
             Case.CrimeType.MURDER,
             List.of(
                 new WitnessTemplate("Stéphane Ortiz", "Pompier",
-                    "L'incendie s'est propagé trop vite pour être accidentel. Des traces d'accélérant sont visibles.", true),
+                    "L'incendie s'est propagé trop vite pour être accidentel. Des traces d'accélérant sont visibles. Dans ce métier on voit de tout, mais des haricots verts explosifs, c'était une première.", true),
                 new WitnessTemplate("Rosie Nakamura", "Voisine",
-                    "J'ai cru voir une voiture bleue stationner devant l'entrepôt vers 2h, mais je n'en suis pas sûre.", false),
+                    "J'ai cru voir une voiture bleue stationner devant l'entrepôt vers 2h, mais je regardais ma série en même temps — ma concentration était divisée.", false),
                 new WitnessTemplate("Daniel Ferreira", "Ex-associé",
-                    "Patricia m'avait menacé de tout faire brûler si je ne la remboursais pas. C'est dans ses textos.", true)
+                    "Patricia m'avait menacé de tout faire brûler si je ne la remboursais pas. C'est dans ses textos. Elle utilisait beaucoup d'emojis flamme, avec le recul c'était un indice.", true)
             ),
             List.of(
                 new EvidenceTemplate("Traces d'accélérant à l'entrée de l'entrepôt", 0.88, true),
@@ -79,17 +83,18 @@ public class CaseGeneratorService {
 
         new CaseTemplate(
             "Le Meurtre du Journaliste",
-            "Grégoire Villeneuve, directeur de cabinet, est accusé d'avoir commandité " +
-            "l'assassinat du journaliste Alain Forêt, retrouvé abattu dans sa voiture.",
+            "Grégoire Villeneuve, directeur de cabinet connu pour ses costumes trois-pièces impeccables, " +
+            "est accusé d'avoir commandité l'assassinat du journaliste Alain Forêt, " +
+            "retrouvé abattu dans sa voiture (une Renault Twingo beige — le détail a beaucoup fait parler).",
             "Grégoire Villeneuve",
             Case.CrimeType.MURDER,
             List.of(
                 new WitnessTemplate("Sophie Renard", "Journaliste collègue",
-                    "Alain m'avait confié qu'il craignait pour sa vie. Il avait reçu des menaces anonymes.", true),
+                    "Alain m'avait confié qu'il craignait pour sa vie. Il avait reçu des menaces anonymes et avait commencé à regarder sous sa voiture chaque matin.", true),
                 new WitnessTemplate("Commissaire Leroy", "Police judiciaire",
-                    "L'arme retrouvée appartient à un individu lié au cabinet du directeur.", true),
+                    "L'arme retrouvée appartient à un individu lié au cabinet du directeur. Je précise que j'ai moi-même trouvé ce lien, je suis assez fier de mon travail.", true),
                 new WitnessTemplate("Xavier Perrault", "Chauffeur du cabinet",
-                    "M. Villeneuve était en réunion toute la nuit. Je l'attendais dehors.", false)
+                    "M. Villeneuve était en réunion toute la nuit. Je l'attendais dehors. J'ai regardé les étoiles et mangé un sandwich jambon-beurre. C'était un bon sandwich.", false)
             ),
             List.of(
                 new EvidenceTemplate("Arme retrouvée — traçable jusqu'au cabinet", 0.85, true),
@@ -104,14 +109,15 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "L'Escroquerie Financière",
             "Sophie Martin est accusée d'avoir détourné 500 000 € des comptes " +
-            "de son entreprise au profit de sociétés écrans qu'elle contrôle.",
+            "de son entreprise au profit de sociétés écrans aux noms suspects : SOCIÉTÉ ALPHA, SOCIÉTÉ BÊTA, " +
+            "et mystérieusement, SOCIÉTÉ GAMMA DES AÇORES.",
             "Sophie Martin",
             Case.CrimeType.FRAUD,
             List.of(
                 new WitnessTemplate("Jean Lefèvre", "Comptable",
-                    "Les comptes ne correspondent pas depuis 6 mois. Des sommes partent vers des sociétés inconnues.", true),
+                    "Les comptes ne correspondent pas depuis 6 mois. Des sommes partent vers des sociétés inconnues. J'ai signalé ça à trois reprises mais on m'a offert une plante verte et on m'a dit de me calmer.", true),
                 new WitnessTemplate("Claire Morin", "Collègue de bureau",
-                    "Sophie semblait très stressée ces derniers temps et évitait les réunions financières.", false)
+                    "Sophie semblait très stressée ces derniers temps, évitait les réunions financières, et avait commencé à prendre des cours de salsa le mardi. Ces trois choses sont probablement liées.", false)
             ),
             List.of(
                 new EvidenceTemplate("Virement bancaire suspect vers une société offshore", 0.90, true),
@@ -123,16 +129,17 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "La Fraude à l'Héritage",
             "Julien Moreau est accusé d'avoir falsifié le testament de sa grand-mère " +
-            "pour s'approprier un patrimoine de 3 millions d'euros.",
+            "pour s'approprier un patrimoine de 3 millions d'euros — dont 2,8 millions issus " +
+            "de la vente d'une collection de nains de jardin rares. Chacun ses passions.",
             "Julien Moreau",
             Case.CrimeType.FRAUD,
             List.of(
                 new WitnessTemplate("Maître Cécile Dupré", "Notaire",
-                    "Le testament présenté présente des irrégularités graphologiques manifestes.", true),
+                    "Le testament présenté présente des irrégularités graphologiques manifestes. La signature ressemble à celle d'un enfant de 8 ans qui aurait eu peur.", true),
                 new WitnessTemplate("Bernard Moreau", "Frère de l'accusé",
-                    "Julien avait des dettes importantes. Il m'avait dit qu'il trouverait une solution.", true),
+                    "Julien avait des dettes importantes. Il m'avait dit qu'il trouverait une solution. Je croyais qu'il parlait d'un second emploi.", true),
                 new WitnessTemplate("Madeleine Tissot", "Voisine de la grand-mère",
-                    "La vieille dame me disait toujours que Julien était son petit-fils préféré.", false)
+                    "La vieille dame me disait toujours que Julien était son petit-fils préféré. Elle le disait aussi à Julien, à son frère, et au facteur. C'était quelqu'un de très généreux dans les compliments.", false)
             ),
             List.of(
                 new EvidenceTemplate("Testament contesté avec signature irrégulière", 0.82, true),
@@ -147,14 +154,16 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "Le Vol au Musée",
             "Thomas Petit est accusé du vol d'un tableau de Monet estimé " +
-            "à 1 million d'euros au musée des Beaux-Arts.",
+            "à 1 million d'euros au musée des Beaux-Arts. " +
+            "Il a été retrouvé chez lui avec le tableau accroché au mur du salon " +
+            "« parce que les couleurs allaient avec le canapé ».",
             "Thomas Petit",
             Case.CrimeType.THEFT,
             List.of(
                 new WitnessTemplate("Isabelle Roux", "Gardienne",
-                    "Il était présent lors de la fermeture, ce qui est inhabituel pour un simple visiteur.", true),
+                    "Il était présent lors de la fermeture, ce qui est inhabituel pour un simple visiteur. Il a demandé trois fois où étaient les toilettes — tactique de diversion, à mon avis.", true),
                 new WitnessTemplate("Marc Blanc", "Restaurateur d'art",
-                    "Je l'ai vu examiner le tableau de très près et photographier le cadre plusieurs fois.", false)
+                    "Je l'ai vu examiner le tableau de très près et photographier le cadre plusieurs fois. J'ai d'abord pensé qu'il était passionné d'art. Maintenant je me sens naïf.", false)
             ),
             List.of(
                 new EvidenceTemplate("Enregistrement caméra — silhouette identifiable", 0.80, true),
@@ -166,16 +175,17 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "Le Braquage de la Bijouterie",
             "Lucas Faure est accusé d'avoir braqué la bijouterie Delacroix " +
-            "avec deux complices, emportant pour 800 000 € de bijoux.",
+            "avec deux complices, emportant pour 800 000 € de bijoux. " +
+            "L'un des braqueurs a laissé sa liste de courses dans la caisse : pain, lait, diamants.",
             "Lucas Faure",
             Case.CrimeType.THEFT,
             List.of(
                 new WitnessTemplate("Valérie Delacroix", "Propriétaire",
-                    "L'un des braqueurs avait un tatouage de serpent sur l'avant-bras gauche, je l'ai bien vu.", true),
+                    "L'un des braqueurs avait un tatouage de serpent sur l'avant-bras gauche, je l'ai bien vu. Il portait aussi des baskets à scratch — pas très intimidant mais très pratique.", true),
                 new WitnessTemplate("Kevin Simons", "Passant",
-                    "J'ai vu trois types sortir en courant. Deux avaient des casques de moto.", false),
+                    "J'ai vu trois types sortir en courant. Deux avaient des casques de moto. Le troisième portait un bob de plage — détail assez peu intimidant.", false),
                 new WitnessTemplate("Inspecteur Hakimi", "Police technique",
-                    "L'analyse des empreintes sur le coffre correspond à celles de l'accusé dans notre fichier.", true)
+                    "L'analyse des empreintes sur le coffre correspond à celles de l'accusé dans notre fichier. C'est mon meilleur dossier de l'année, personnellement.", true)
             ),
             List.of(
                 new EvidenceTemplate("Empreintes digitales sur le coffre forcé", 0.85, true),
@@ -188,16 +198,17 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "Le Cambriolage Nocturne",
             "Arnaud Tissier est accusé d'avoir cambriolé la villa du baron Garnier " +
-            "pendant ses vacances, emportant bijoux et œuvres d'art pour 400 000 €.",
+            "pendant ses vacances, emportant bijoux et œuvres d'art pour 400 000 €. " +
+            "Le baron a appris la nouvelle par SMS depuis son club de golf à Monaco.",
             "Arnaud Tissier",
             Case.CrimeType.THEFT,
             List.of(
                 new WitnessTemplate("Monique Léger", "Gardienne du quartier",
-                    "J'ai vu une fourgonnette blanche s'arrêter devant la villa à 23h, mais je n'étais pas près.", false),
+                    "J'ai vu une fourgonnette blanche s'arrêter devant la villa à 23h, mais je n'étais pas près. Je portais mes lunettes de lecture, pas celles de loin — erreur de soirée.", false),
                 new WitnessTemplate("Thierry Garnier", "Fils de la victime",
-                    "Arnaud était notre jardinier depuis 2 ans — il connaissait parfaitement le code de l'alarme.", true),
+                    "Arnaud était notre jardinier depuis 2 ans — il connaissait parfaitement le code de l'alarme. On lui faisait confiance. Mon père pleure. Enfin, surtout pour le Renoir.", true),
                 new WitnessTemplate("Serge Blondel", "Receleur présumé",
-                    "Je n'ai rien acheté d'illégal. Tout vient de ventes aux enchères parfaitement légales.", false)
+                    "Je n'ai rien acheté d'illégal. Tout vient de ventes aux enchères parfaitement légales. Je peux vous montrer mes reçus. J'ai aussi un très bon avocat.", false)
             ),
             List.of(
                 new EvidenceTemplate("Code alarme désactivé avec le code personnel du jardinier", 0.82, true),
@@ -212,16 +223,17 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "L'Agression dans le Parc",
             "Antoine Renard est accusé d'avoir violemment agressé Marco Ibáñez " +
-            "dans le parc des Buttes-Chaumont. La victime est hospitalisée.",
+            "dans le parc des Buttes-Chaumont. La victime est hospitalisée. " +
+            "Son avocat est furieux — encore plus que d'habitude.",
             "Antoine Renard",
             Case.CrimeType.ASSAULT,
             List.of(
                 new WitnessTemplate("Fatima Ouali", "Joggeuse",
-                    "J'ai clairement vu l'agresseur frapper l'homme à plusieurs reprises. Il portait une veste rouge.", true),
+                    "J'ai clairement vu l'agresseur frapper l'homme à plusieurs reprises. Il portait une veste rouge. J'ai continué à courir parce que j'avais mon chrono à battre — je m'en excuse.", true),
                 new WitnessTemplate("Roger Kastner", "Retraité",
-                    "J'entends des gens se disputer souvent dans ce parc. Je n'ai pas bien vu cette fois-là.", false),
+                    "J'entends des gens se disputer souvent dans ce parc. Je n'ai pas bien vu cette fois-là. J'écoutais un podcast sur la méditation zen — l'ironie ne m'échappe pas.", false),
                 new WitnessTemplate("Dr. Nadia Chen", "Médecin urgentiste",
-                    "Les blessures sont compatibles avec des coups répétés. Fractures multiples.", true)
+                    "Les blessures sont compatibles avec des coups répétés. Fractures multiples. Le patient a surtout demandé si son téléphone était cassé.", true)
             ),
             List.of(
                 new EvidenceTemplate("Vidéo de surveillance montrant une veste rouge", 0.65, true),
@@ -234,16 +246,17 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "La Rixe au Bar",
             "Nicolas Durand est accusé d'avoir grièvement blessé un client " +
-            "lors d'une rixe au bar Le Refuge, utilisant une bouteille brisée.",
+            "lors d'une rixe au bar Le Refuge, utilisant une bouteille brisée. " +
+            "Le bar a depuis remplacé toutes ses bouteilles par du plastique — mesure préventive saluée.",
             "Nicolas Durand",
             Case.CrimeType.ASSAULT,
             List.of(
                 new WitnessTemplate("Laura Petit", "Barmaid",
-                    "J'ai tout vu : c'est Durand qui a pris la bouteille en premier et qui a frappé sans raison.", true),
+                    "J'ai tout vu : c'est Durand qui a pris la bouteille en premier et frappé sans raison. C'était mon meilleur Bordeaux en plus — double crime, si vous voulez mon avis.", true),
                 new WitnessTemplate("Rémi Courtois", "Ami de l'accusé",
-                    "Nicolas s'est défendu, c'est l'autre qui a commencé à l'insulter violemment.", false),
+                    "Nicolas s'est défendu, c'est l'autre qui a commencé à l'insulter violemment. Il lui avait reproché d'avoir mis du ketchup sur une entrecôte — une insulte impardonnable selon certains.", false),
                 new WitnessTemplate("Dr. Paul Vernet", "Médecin légiste",
-                    "La blessure correspond à un impact de verre. La cicatrice est profonde, ce n'était pas accidentel.", true)
+                    "La blessure correspond à un impact de verre. La cicatrice est profonde, ce n'était pas accidentel. Le patient réclamait surtout qu'on finisse son verre — je l'ai noté dans le rapport.", true)
             ),
             List.of(
                 new EvidenceTemplate("Caméra du bar : Durand saisit la bouteille en premier", 0.88, true),
@@ -257,17 +270,18 @@ public class CaseGeneratorService {
 
         new CaseTemplate(
             "La Corruption Municipale",
-            "Édouard Marchetti, conseiller municipal, est accusé d'avoir accepté " +
-            "des pots-de-vin de promoteurs pour l'octroi de permis de construire illégaux.",
+            "Édouard Marchetti, conseiller municipal à l'agenda chargé, est accusé d'avoir accepté " +
+            "des pots-de-vin de promoteurs pour l'octroi de permis de construire illégaux. " +
+            "Sa défense principale : « Je croyais que c'était des cadeaux d'anniversaire. »",
             "Édouard Marchetti",
             Case.CrimeType.CORRUPTION,
             List.of(
                 new WitnessTemplate("Sandra Leroy", "Comptable de la mairie",
-                    "Des virements inhabituels ont transité par un compte offshore lié à M. Marchetti.", true),
+                    "Des virements inhabituels ont transité par un compte offshore lié à M. Marchetti. J'ai alerté mes supérieurs. On m'a offert une promotion à un poste sans photocopieuse.", true),
                 new WitnessTemplate("Pierre Duval", "Promoteur immobilier",
-                    "Je n'ai jamais versé d'argent à qui que ce soit. C'est une calomnie politique.", false),
+                    "Je n'ai jamais versé d'argent à qui que ce soit. C'est une calomnie politique. (Ma déclaration a été relue par mon avocat, mes comptables, et un coach en communication.)", false),
                 new WitnessTemplate("Alice Fontaine", "Journaliste d'investigation",
-                    "J'ai des enregistrements de leurs conversations où les conditions du deal sont évoquées.", true)
+                    "J'ai des enregistrements de leurs conversations où les conditions du deal sont évoquées. Ils utilisaient le mot « fromage » comme code pour l'argent — très élaboré.", true)
             ),
             List.of(
                 new EvidenceTemplate("Enregistrement audio partiellement effacé", 0.62, false),
@@ -279,17 +293,18 @@ public class CaseGeneratorService {
 
         new CaseTemplate(
             "L'Espionnage Industriel",
-            "Victor Sanz, ingénieur en chef, est accusé d'avoir vendu les plans secrets " +
-            "d'un nouveau processeur à une entreprise concurrente pour 1,2 million d'euros.",
+            "Victor Sanz, ingénieur en chef habituellement exemplaire, est accusé d'avoir vendu les plans secrets " +
+            "d'un nouveau processeur à une entreprise concurrente pour 1,2 million d'euros. " +
+            "Son bureau était curieusement tapissé de Post-its avec des prix de yachts.",
             "Victor Sanz",
             Case.CrimeType.CORRUPTION,
             List.of(
                 new WitnessTemplate("Dr. Isabelle Morin", "Directrice R&D",
-                    "Seul Victor avait accès aux fichiers ultra-confidentiels. Son badge a été utilisé à 3h du matin.", true),
+                    "Seul Victor avait accès aux fichiers ultra-confidentiels. Son badge a été utilisé à 3h du matin. Victor prétend avoir somnambulisme — première fois qu'on invoque ça dans ce bâtiment.", true),
                 new WitnessTemplate("Frank Mueller", "Collègue ingénieur",
-                    "Victor m'a montré une liasse de billets de 500 € la semaine dernière, sans explication.", true),
+                    "Victor m'a montré une liasse de billets de 500 € la semaine dernière, sans explication. Il a juste dit « c'est pour les vacances ». En mars.", true),
                 new WitnessTemplate("Mia Chen", "DRH de l'entreprise",
-                    "Victor est un employé modèle depuis 8 ans. Je ne peux pas y croire.", false)
+                    "Victor est un employé modèle depuis 8 ans. Je ne peux pas y croire. Sauf peut-être pour les Post-its de yachts — ça m'a toujours semblé bizarre.", false)
             ),
             List.of(
                 new EvidenceTemplate("Fichiers confidentiels récupérés sur serveur étranger", 0.92, true),
@@ -346,6 +361,13 @@ public class CaseGeneratorService {
                 ? 0.65 + random.nextDouble() * 0.35
                 : 0.15 + random.nextDouble() * 0.35;
             w.setReliability(reliability);
+
+            Witness.WitnessPersonality personality;
+            if      (reliability < 0.30) personality = Witness.WitnessPersonality.LIAR;
+            else if (reliability < 0.52) personality = Witness.WitnessPersonality.NERVOUS;
+            else if (reliability >= 0.82) personality = Witness.WitnessPersonality.CONFIDENT;
+            else                          personality = Witness.WitnessPersonality.COOPERATIVE;
+            w.setPersonality(personality);
             Statement stmt = new Statement();
             stmt.setContent(wt.statement);
             stmt.setWitnessName(wt.name);
@@ -368,7 +390,8 @@ public class CaseGeneratorService {
         for (int i = 1; i <= 6; i++) {
             JuryMember member = new JuryMember();
             member.setName("Juré n°" + i);
-            member.setConvictionLevel(0.5 + (random.nextDouble() - 0.5) * 0.2);
+            // Jury part from 0.45 to 0.75 — biased toward guilty, harder to convince
+            member.setConvictionLevel(0.60 + (random.nextDouble() - 0.5) * 0.30);
             jury.add(member);
         }
         cas.setJury(jury);

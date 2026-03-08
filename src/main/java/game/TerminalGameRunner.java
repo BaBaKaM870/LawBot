@@ -59,7 +59,7 @@ public class TerminalGameRunner implements CommandLineRunner {
             playing = askReplay();
         }
 
-        System.out.println(CYAN + "\nMerci d'avoir joué à LawBot ! À bientôt." + RESET);
+        System.out.println(CYAN + "\nMerci d'avoir joué à LawBot ! Consultez un vrai avocat pour vos vrais problèmes." + RESET);
         scanner.close();
     }
 
@@ -71,7 +71,8 @@ public class TerminalGameRunner implements CommandLineRunner {
         System.out.println(YELLOW + BOLD);
         System.out.println("  ╔══════════════════════════════════════════════╗");
         System.out.println("  ║    ⚖   LAWBOT  -  SIMULATION DE PROCÈS  ⚖   ║");
-        System.out.println("  ║       Vous êtes l'avocat de la défense       ║");
+        System.out.println("  ║     Vous êtes l'avocat de la défense...      ║");
+        System.out.println("  ║         (bonne chance, vraiment)             ║");
         System.out.println("  ╚══════════════════════════════════════════════╝");
         System.out.println(RESET);
         System.out.println(WHITE
@@ -85,7 +86,7 @@ public class TerminalGameRunner implements CommandLineRunner {
             + "    confront [N1] [N2] [sujet] - Confronter deux témoins\n"
             + "    next                    - Passer à la phase suivante\n"
             + RESET);
-        waitEnter("  Appuyez sur ENTRÉE pour commencer...");
+        waitEnter("  Appuyez sur ENTRÉE pour commencer... (votre café refroidit déjà)");
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -139,8 +140,8 @@ public class TerminalGameRunner implements CommandLineRunner {
         clearScreen();
         printPhaseHeader(2, "CAS DE L'ACCUSATION");
         System.out.println(WHITE
-            + "  L'accusation présente ses preuves.\n"
-            + "  Contestez celles qui vous semblent douteuses !\n"
+            + "  L'accusation présente ses preuves avec un grand sourire satisfait.\n"
+            + "  Certaines sont bidons — à vous de les débusquer !\n"
             + RESET);
 
         int actionsLeft = 3;
@@ -205,7 +206,7 @@ public class TerminalGameRunner implements CommandLineRunner {
         printPhaseHeader(3, "CAS DE LA DÉFENSE");
         System.out.println(WHITE
             + "  Interrogez les témoins pour semer le doute !\n"
-            + "  Posez des questions précises pour détecter des contradictions.\n"
+            + "  Poser des questions bêtes peut parfois révéler de grandes vérités.\n"
             + RESET);
 
         int actionsLeft = 5;
@@ -278,7 +279,7 @@ public class TerminalGameRunner implements CommandLineRunner {
         printPhaseHeader(4, "CONTRE-INTERROGATOIRE");
         System.out.println(WHITE
             + "  Confrontez deux témoins sur le même sujet !\n"
-            + "  Des contradictions entre eux affaibliront l'accusation.\n"
+            + "  Des contradictions entre eux affaibliront l'accusation — et leur amitié.\n"
             + RESET);
 
         int actionsLeft = 2;
@@ -355,6 +356,7 @@ public class TerminalGameRunner implements CommandLineRunner {
         printPhaseHeader(5, "PLAIDOIRIES FINALES");
         System.out.println(WHITE
             + "  C'est votre dernière chance de convaincre le jury.\n"
+            + "  Le juré n°4 a l'air d'avoir faim, soyez convaincant et rapide.\n"
             + "  Entrez votre plaidoirie (ou ENTRÉE pour une standard) :\n"
             + RESET);
         System.out.print(BOLD + "  > " + RESET);
@@ -364,9 +366,9 @@ public class TerminalGameRunner implements CommandLineRunner {
         if (!plea.isEmpty()) {
             System.out.println(CYAN + "  Votre plaidoirie :" + RESET);
             System.out.println("  \"" + plea + "\"");
-            System.out.println(GREEN + "\n  Le jury a pris note de votre plaidoirie." + RESET);
+            System.out.println(GREEN + "\n  Le jury a pris note. Le juré n°2 hoche la tête lentement." + RESET);
         } else {
-            System.out.println(YELLOW + "  Plaidoirie standard prononcée." + RESET);
+            System.out.println(YELLOW + "  Plaidoirie standard prononcée. Le jury hausse collectivement les épaules." + RESET);
         }
 
         waitEnter("\n  Appuyez sur ENTRÉE pour le verdict...");
@@ -395,10 +397,10 @@ public class TerminalGameRunner implements CommandLineRunner {
 
         if ("NOT_GUILTY".equals(verdict.status())) {
             System.out.println(GREEN + BOLD + "  ✔  VERDICT : NON COUPABLE !" + RESET);
-            System.out.println(GREEN + "     Votre client est libéré. Félicitations !" + RESET);
+            System.out.println(GREEN + "     Votre client est libéré. Il ne vous remerciera probablement pas assez." + RESET);
         } else {
             System.out.println(RED + BOLD + "  ✘  VERDICT : COUPABLE" + RESET);
-            System.out.println(RED + "     Votre client est condamné." + RESET);
+            System.out.println(RED + "     Votre client est condamné. Il vous en voudra pour toujours." + RESET);
         }
         System.out.println();
 

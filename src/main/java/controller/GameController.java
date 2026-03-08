@@ -8,10 +8,45 @@ import service.WitnessService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.Random;
 
 @RestController
 @RequestMapping("/api/game")
 public class GameController {
+
+    private static final Random random = new Random();
+
+    private static final String[] CONTEST_SUCCESS = {
+        "Excellente contestation ! Cette preuve est invalide.",
+        "Bravo ! Vous venez de pulvériser cette preuve bidon.",
+        "Magnifique ! Le procureur blêmit — cette preuve ne tient pas.",
+        "Superbe coup ! Même le greffier a failli applaudir.",
+        "La défense marque un point. Cette preuve est pure invention.",
+    };
+
+    private static final String[] CONTEST_FAIL = {
+        "Contestation rejetée. Cette preuve est authentique.",
+        "Raté. Cette preuve est bien réelle. Le jury vous regarde avec pitié.",
+        "La cour rejette votre contestation. Silence gêné dans la salle.",
+        "Bien essayé, mais non. Cette preuve est solide comme un roc.",
+        "Votre contestation s'effondre. Le procureur esquisse un sourire.",
+    };
+
+    private static final String[] QUESTION_CONTRADICTION = {
+        "Contradiction détectée ! ",
+        "Le témoin vient de se planter en beauté ! ",
+        "Jackpot ! Le témoin se contredit : ",
+        "Le tribunal retient son souffle : ",
+        "Excellente question ! Une contradiction éclate : ",
+    };
+
+    private static final String[] QUESTION_NOTHING = {
+        "Réponse enregistrée. Rien de particulier à signaler.",
+        "Le témoin répond. Pas de contradiction — continuez d'insister.",
+        "Réponse obtenue. Le jury bâille légèrement.",
+        "Le témoin s'en sort sans se contredire. Pour l'instant.",
+        "Réponse enregistrée. Le juré n°3 griffonne distraitement.",
+    };
 
     private final TrialService  trialService;
     private final WitnessService witnessService;
@@ -63,12 +98,12 @@ public class GameController {
             verdictService.updateJuryConviction(trial.getLawCase().getJury(), evidence.getWeight(), true);
             trial.addEvent("✔ Fausse preuve exposée : " + evidence.getDescription());
             return new ActionResultDTO(true,
-                "Excellente contestation ! Cette preuve est invalide.",
+                CONTEST_SUCCESS[random.nextInt(CONTEST_SUCCESS.length)],
                 false, null, toGameState(trial));
         } else {
             trial.addEvent("✘ Contestation rejetée : " + evidence.getDescription());
             return new ActionResultDTO(false,
-                "Contestation rejetée. Cette preuve est authentique.",
+                CONTEST_FAIL[random.nextInt(CONTEST_FAIL.length)],
                 false, null, toGameState(trial));
         }
     }
@@ -104,8 +139,8 @@ public class GameController {
         }
 
         String msg = response.contradictionDetected()
-            ? "Contradiction détectée ! " + response.contradictionDescription()
-            : "Réponse enregistrée.";
+            ? QUESTION_CONTRADICTION[random.nextInt(QUESTION_CONTRADICTION.length)] + response.contradictionDescription()
+            : QUESTION_NOTHING[random.nextInt(QUESTION_NOTHING.length)];
 
         return new ActionResultDTO(response.contradictionDetected(), msg,
             response.contradictionDetected(), response.response(), toGameState(trial));
@@ -145,7 +180,7 @@ public class GameController {
         } else {
             trial.addEvent("Confrontation sans résultat.");
             return new ActionResultDTO(false,
-                "Aucune contradiction détectée entre ces deux témoins.",
+                "Aucune contradiction détectée. Ces deux témoins se sont visiblement concertés.",
                 false, null, toGameState(trial));
         }
     }
