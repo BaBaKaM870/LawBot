@@ -1,4 +1,4 @@
-# ⚖️ LawBot — Simulation de Procès
+# ⚖️ LawBot — Simulation de Procès Lucas Patin, Sriraam Peroumal, Yohan Dechamps
 
 > **Incarnez l'avocat de la défense.** Interrogez les témoins, contestez les preuves et convainquez un jury hostile de l'innocence de votre client. Bonne chance — vous en aurez besoin.
 
