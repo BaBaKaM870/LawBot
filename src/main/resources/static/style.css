@@ -267,14 +267,26 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   color: var(--text);
 }
 
-.jury-bar-wrap { width: 80px; }
+.jury-bar-wrap { width: 100px; position: relative; }
 
 .jury-bar-track {
   height: 6px;
   background: rgba(255,255,255,.08);
   border-radius: 3px;
-  overflow: hidden;
+  position: relative;
 }
+
+.jury-threshold {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 2;
+}
+.jury-t-low  { left: 35%; background: rgba(39,174,96,.75); }
+.jury-t-high { left: 65%; background: rgba(231,76,60,.75); }
 
 .jury-bar-fill {
   height: 100%;
@@ -698,6 +710,11 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   opacity: .35;
   cursor: not-allowed;
 }
+.q-chip.selected {
+  background: rgba(201,162,39,.32);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201,162,39,.18);
+}
 .qbox-actions-left.exhausted {
   color: var(--red);
   border-color: rgba(231,76,60,.4);
@@ -1054,8 +1071,9 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.toast.success { border-color: rgba(39,174,96,.4); color: #66bb6a; }
-.toast.error   { border-color: rgba(231,76,60,.4); color: #e57373; }
+.toast.success { border-color: rgba(39,174,96,.4);  color: #66bb6a; }
+.toast.error   { border-color: rgba(231,76,60,.4);  color: #e57373; }
+.toast.warning { border-color: rgba(230,126,34,.45); color: #f39c12; }
 
 /* ═══════════════════════════════════════════════════════════
    Scrollbar
@@ -1305,6 +1323,212 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   font-family: var(--font-serif); font-size: 1.1rem;
   color: var(--text); font-style: italic;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Confront topic label
+═══════════════════════════════════════════════════════════ */
+.confront-topic-label {
+  font-size: .8rem;
+  color: var(--gold-light);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Barre de confiance du client
+═══════════════════════════════════════════════════════════ */
+.confidence-panel {
+  margin-top: .85rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--border);
+}
+.confidence-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: .4rem;
+}
+.confidence-label-text {
+  font-size: .72rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.confidence-pct {
+  font-size: .78rem; font-weight: 600; color: var(--text);
+}
+.confidence-track {
+  height: 5px; background: rgba(255,255,255,.07);
+  border-radius: 3px; overflow: hidden;
+}
+.confidence-fill {
+  height: 100%; border-radius: 3px;
+  transition: width .5s ease, background .4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Panneau jury
+═══════════════════════════════════════════════════════════ */
+.jury-panel {
+  border-bottom: 1px solid var(--border);
+  padding: .85rem 1.25rem;
+}
+.jury-panel-title {
+  font-size: .75rem; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text-muted);
+  margin-bottom: .7rem;
+}
+.juror-row {
+  display: flex; align-items: center; gap: .45rem;
+  padding: .28rem 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.juror-row:last-child { border-bottom: none; }
+.juror-icon { font-size: .95rem; flex-shrink: 0; }
+.juror-name {
+  flex: 1; font-size: .75rem; font-weight: 500;
+  color: var(--text); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.juror-mini-bar {
+  width: 44px; height: 4px;
+  background: rgba(255,255,255,.07);
+  border-radius: 2px; overflow: hidden; flex-shrink: 0;
+}
+.juror-mini-fill {
+  height: 100%; border-radius: 2px;
+  transition: width .5s ease, background .4s ease;
+}
+.juror-pct {
+  font-size: .68rem; font-weight: 600;
+  width: 30px; text-align: right; flex-shrink: 0;
+}
+.juror-pct.green { color: var(--green); }
+.juror-pct.orange { color: #f39c12; }
+.juror-pct.red { color: var(--red); }
+.juror-row.changed {
+  animation: jurorPulse .7s ease;
+}
+@keyframes jurorPulse {
+  0%, 100% { background: transparent; }
+  40%       { background: rgba(201,162,39,.12); border-radius: 6px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Badge personnalité témoin
+═══════════════════════════════════════════════════════════ */
+.personality-badge {
+  display: inline-flex; align-items: center; gap: .25rem;
+  font-size: .68rem; font-weight: 600;
+  padding: .12rem .45rem; border-radius: 12px;
+  margin-bottom: .55rem;
+  background: rgba(201,162,39,.12);
+  border: 1px solid rgba(201,162,39,.25);
+  color: var(--gold-light);
+}
+.personality-badge.unknown {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.1);
+  color: var(--text-muted); font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Animations flash sur les cartes
+═══════════════════════════════════════════════════════════ */
+@keyframes flashSuccess {
+  0%, 100% { background: var(--bg-card); border-color: var(--border); }
+  40%       { background: rgba(39,174,96,.22); border-color: var(--green); box-shadow: 0 0 14px rgba(39,174,96,.3); }
+}
+@keyframes flashFail {
+  0%, 100% { background: var(--bg-card); border-color: var(--border); }
+  40%       { background: rgba(231,76,60,.18); border-color: var(--red); }
+}
+.flash-success { animation: flashSuccess 0.65s ease; }
+.flash-fail    { animation: flashFail 0.65s ease; }
+
+/* ═══════════════════════════════════════════════════════════
+   Overlay événement dramatique
+═══════════════════════════════════════════════════════════ */
+.phase-event-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,10,20,.82);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 250;
+  backdrop-filter: blur(4px);
+  animation: fadeIn .25s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.phase-event-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2rem 2.25rem;
+  max-width: 420px; width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow);
+  animation: scaleIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+.pe-icon { font-size: 3rem; margin-bottom: .6rem; display: block; }
+.pe-badge {
+  display: inline-block; font-size: .72rem; font-weight: 700;
+  letter-spacing: .07em; padding: .18rem .65rem; border-radius: 20px;
+  margin-bottom: .85rem; text-transform: uppercase;
+}
+.pe-good    { background: var(--green-bg);  color: #66bb6a; border: 1px solid rgba(39,174,96,.3); }
+.pe-bad     { background: var(--red-bg);    color: #e57373; border: 1px solid rgba(231,76,60,.3); }
+.pe-neutral { background: var(--gold-dim);  color: var(--gold-light); border: 1px solid var(--border); }
+.pe-title {
+  font-family: var(--font-serif); font-size: 1.3rem;
+  color: var(--gold-light); margin-bottom: .65rem;
+}
+.pe-desc {
+  font-size: .88rem; color: var(--text-muted);
+  line-height: 1.6; margin-bottom: 1.4rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Message du juge (phase plaidoirie)
+═══════════════════════════════════════════════════════════ */
+.judge-message {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: rgba(52,152,219,.07);
+  border: 1px solid rgba(52,152,219,.2);
+  border-left: 4px solid #3498db;
+  border-radius: var(--radius);
+  padding: .9rem 1.1rem;
+}
+.judge-icon { font-size: 1.8rem; flex-shrink: 0; }
+.judge-name {
+  display: block; font-size: .72rem; color: #64b5f6;
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: .25rem;
+}
+.judge-text {
+  font-style: italic; font-size: .88rem;
+  color: var(--text-muted); line-height: 1.55;
+}
+
+/* Statut jury en phase plaidoirie */
+.closing-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .75rem 1.1rem;
+  gap: 1rem;
+}
+.closing-jury-info { flex: 1; font-size: .85rem; color: var(--text); }
+
+/* Timer cosmétique */
+.closing-timer-wrap { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
+.closing-timer-track {
+  width: 80px; height: 5px;
+  background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden;
+}
+.closing-timer-fill {
+  height: 100%; background: var(--gold);
+  border-radius: 3px;
+  transition: width 1s linear;
+}
+.closing-timer-label {
+  font-size: .75rem; color: var(--text-muted); white-space: nowrap;
+}
+.closing-timer-val { color: var(--gold-light); font-weight: 600; }
 
 /* ═══════════════════════════════════════════════════════════
    Verdict Feedback Points

@@ -19,8 +19,8 @@
       <p class="welcome-tagline">Simulation de Procès</p>
       <div class="session-stats" id="session-stats"></div>
       <p class="welcome-intro">
-        Incarnez l'avocat de la défense. Interrogez les témoins,
-        contestez les preuves et convainquez le jury de l'innocence de votre client.
+        Votre client clame son innocence. Le jury part contre vous.
+        Il vous reste le droit, les mots, et votre instinct.
       </p>
       <button class="btn-primary" id="start-btn">Commencer une affaire</button>
     </div>
@@ -32,44 +32,44 @@
       <div class="tuto-header">
         <span class="tuto-icon">⚖</span>
         <h2 class="tuto-title">Comment jouer&nbsp;?</h2>
-        <p class="tuto-intro">Vous incarnez l'avocat de la défense. Guidez votre client vers l'acquittement en six phases.</p>
+        <p class="tuto-intro">Votre client a besoin de vous. Le jury part du principe qu'il est coupable. À vous de le faire douter — en six actes.</p>
       </div>
 
       <div class="tuto-phases">
         <div class="tuto-phase">
           <div class="tuto-phase-icon">📜</div>
           <div class="tuto-phase-name">Ouverture</div>
-          <div class="tuto-phase-desc">Prenez connaissance de l'affaire et des accusations.</div>
+          <div class="tuto-phase-desc">Lisez le dossier. Chaque détail peut faire la différence.</div>
         </div>
         <div class="tuto-phase">
           <div class="tuto-phase-icon">⚔️</div>
           <div class="tuto-phase-name">Accusation</div>
-          <div class="tuto-phase-desc">Contestez les preuves de la partie adverse.</div>
+          <div class="tuto-phase-desc">L'accusation attaque. Certaines preuves sont fausses — trouvez-les.</div>
         </div>
         <div class="tuto-phase">
           <div class="tuto-phase-icon">🛡️</div>
           <div class="tuto-phase-name">Défense</div>
-          <div class="tuto-phase-desc">Interrogez vos témoins pour établir l'innocence.</div>
+          <div class="tuto-phase-desc">Interrogez vos témoins. Un aveu, une hésitation — ça peut tout changer.</div>
         </div>
         <div class="tuto-phase">
           <div class="tuto-phase-icon">🔥</div>
           <div class="tuto-phase-name">Contre-interro.</div>
-          <div class="tuto-phase-desc">Déstabilisez les témoins adverses.</div>
+          <div class="tuto-phase-desc">Confrontez les témoins adverses. Les histoires qui ne concordent pas, ça marque les jurés.</div>
         </div>
         <div class="tuto-phase">
           <div class="tuto-phase-icon">🎤</div>
           <div class="tuto-phase-name">Plaidoirie</div>
-          <div class="tuto-phase-desc">Faites votre plaidoirie finale devant le jury.</div>
+          <div class="tuto-phase-desc">Votre dernier mot. Le jury vous écoute. Choisissez vos mots.</div>
         </div>
         <div class="tuto-phase">
           <div class="tuto-phase-icon">⚖️</div>
           <div class="tuto-phase-name">Verdict</div>
-          <div class="tuto-phase-desc">Le jury délibère et rend son jugement.</div>
+          <div class="tuto-phase-desc">Le jury délibère. Innocent ou coupable — tout se joue là.</div>
         </div>
       </div>
 
       <div class="tuto-tips">
-        <h3 class="tuto-tips-title">Conseils</h3>
+        <h3 class="tuto-tips-title">Ce que votre mentor vous glisse à l'oreille</h3>
         <ul>
           <li> Le jury part penché vers la culpabilité — chaque action compte.</li>
           <li> Les preuves marquées <strong>Douteux</strong> peuvent être fausses — contestez-les&nbsp;!</li>
@@ -79,8 +79,8 @@
       </div>
 
       <div class="tuto-actions">
-        <button class="btn-secondary" id="tuto-skip-btn">Passer</button>
-        <button class="btn-primary" id="tuto-play-btn">Commencer le procès !</button>
+        <button class="btn-secondary" id="tuto-skip-btn">Je sais déjà tout ça</button>
+        <button class="btn-primary" id="tuto-play-btn">Entrer dans la salle d'audience →</button>
       </div>
     </div>
   </div>
@@ -98,16 +98,18 @@
 
       <div class="header-stats">
         <div class="stat-group">
-          <span class="stat-label">Jury</span>
+          <span class="stat-label">Conviction du jury</span>
           <div class="jury-bar-wrap">
             <div class="jury-bar-track">
               <div class="jury-bar-fill" id="jury-fill"></div>
+              <div class="jury-threshold jury-t-low" title="Seuil d'acquittement (35%)"></div>
+              <div class="jury-threshold jury-t-high" title="Seuil de condamnation (65%)"></div>
             </div>
           </div>
           <span class="stat-value" id="jury-pct">50%</span>
         </div>
-        <div class="stat-group">
-          <span class="stat-label">Actions</span>
+        <div class="stat-group" title="Actions réussies / tentées">
+          <span class="stat-label">Score</span>
           <span class="stat-value" id="score-val">0/0</span>
         </div>
       </div>
@@ -116,7 +118,7 @@
     <!-- Corps du jeu -->
     <div class="game-body">
 
-      <!-- Sidebar : info + journal -->
+      <!-- Sidebar : info + jury + journal -->
       <aside class="sidebar">
         <div class="case-card">
           <h2 class="case-title" id="case-title">—</h2>
@@ -129,10 +131,13 @@
             </div>
           </div>
           <p class="case-desc" id="case-desc"></p>
+          <div class="confidence-panel" id="confidence-panel"></div>
         </div>
 
+        <div class="jury-panel" id="jury-panel"></div>
+
         <div class="events-panel">
-          <h3 class="events-title">📋 Journal</h3>
+          <h3 class="events-title">📋 Journal d'audience</h3>
           <div id="events-list"></div>
         </div>
       </aside>

@@ -214,9 +214,11 @@ public class GameController {
                 Witness w = wList.get(i);
                 String stmt = w.getInitialStatement() != null
                     ? w.getInitialStatement().getContent() : null;
+                String personality = w.getPersonality() != null
+                    ? w.getPersonality().name() : null;
                 witnesses.add(new WitnessInfoDTO(
                     i, w.getName(), w.getProfession(),
-                    w.getCredibility(), w.getStressLevel(), stmt));
+                    w.getCredibility(), w.getStressLevel(), stmt, personality));
             }
         }
 
@@ -228,6 +230,16 @@ public class GameController {
                 evidences.add(new EvidenceInfoDTO(
                     i, e.getDescription(), e.getWeight(),
                     e.isAuthentic(), e.isContested()));
+            }
+        }
+
+        List<JuryMemberInfoDTO> juryMembers = new ArrayList<>();
+        if (cas.getJury() != null) {
+            List<JuryMember> jList = cas.getJury();
+            for (int i = 0; i < jList.size(); i++) {
+                JuryMember j = jList.get(i);
+                String profile = j.getProfile() != null ? j.getProfile().name() : "LOGICAL";
+                juryMembers.add(new JuryMemberInfoDTO(i, j.getName(), profile, j.getConvictionLevel()));
             }
         }
 
@@ -247,7 +259,8 @@ public class GameController {
             juryConviction,
             trial.getSuccessfulActionsCount(),
             trial.getTotalActionsCount(),
-            trial.getEvents() != null ? trial.getEvents() : List.of()
+            trial.getEvents() != null ? trial.getEvents() : List.of(),
+            juryMembers
         );
     }
 

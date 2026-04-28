@@ -1,0 +1,8 @@
+services:
+  lawbot:
+    build: .
+    image: lawbot:latest
+    container_name: lawbot
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
