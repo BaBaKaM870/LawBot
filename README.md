@@ -35,10 +35,10 @@ Le jeu se déroule en **6 phases successives** :
 
 | Type | Affaires |
 |------|----------|
-| 🔪 **Meurtre** | Le meurtre au manoir, L'hôtel des Arts, Incendie criminel, Le meurtre du journaliste |
-| 💰 **Fraude** | L'escroquerie financière, La fraude pour l'héritage |
-| 🏦 **Vol** | Le vol au Musée, Le braquage de la bijouterie, Le cambriolage nocturne |
-| 👊 **Agression** | Agression dans le Parc, rixe au bar |
+| 🔪 **Meurtre** | Meurtre au manoir, Hôtel des arts, Incendie criminel, Meurtre du journaliste |
+| 💰 **Fraude** | Escroquerie financière, Fraude pour l'héritage |
+| 🏦 **Vol** | Vol au Musée, Braquage de la bijouterie, Le cambriolage nocturne |
+| 👊 **Agression** | Agression dans le Parc, Rixe au bar |
 | 🏛️ **Corruption** | La corruption municipale, espionnage industriel |
 
 Chaque affaire dispose de **témoins uniques** (2 à 3), de **preuves spécifiques** (authentiques ou falsifiées) et d'un accusé nommé. La culpabilité réelle de l'accusé est révélée après le verdict.
