@@ -1,10 +1,11 @@
 package dto;
 
 public record WitnessInfoDTO(
-    int index,
+    int    index,
     String name,
     String profession,
-    int credibility,
+    int    credibility,
     double stressLevel,
-    String initialStatement
+    String initialStatement,
+    String personality
 ) {}
