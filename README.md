@@ -5,7 +5,7 @@ Lucas Patin, Sriraam Peroumal, Yohan Dechamps
 
 ---
 
-## 🎮 Comment jouer
+## Comment jouer ?
 
 Le jeu se déroule en **6 phases successives** :
 
@@ -29,30 +29,30 @@ Le jeu se déroule en **6 phases successives** :
 
 ---
 
-## 🗂️ Affaires disponibles
+## Affaires disponibles
 
 13 affaires générées aléatoirement, réparties sur 5 types de crimes :
 
 | Type | Affaires |
 |------|----------|
-| 🔪 **Meurtre** | Le Meurtre au Manoir, L'Hôtel des Arts, L'Incendie Criminel, Le Meurtre du Journaliste |
-| 💰 **Fraude** | L'Escroquerie Financière, La Fraude à l'Héritage |
-| 🏦 **Vol** | Le Vol au Musée, Le Braquage de la Bijouterie, Le Cambriolage Nocturne |
-| 👊 **Agression** | L'Agression dans le Parc, La Rixe au Bar |
-| 🏛️ **Corruption** | La Corruption Municipale, L'Espionnage Industriel |
+| 🔪 **Meurtre** | Meurtre au manoir, Hôtel des arts, Incendie criminel, Meurtre du journaliste |
+| 💰 **Fraude** | Escroquerie financière, Fraude pour l'héritage |
+| 🏦 **Vol** | Vol au Musée, Braquage de la bijouterie, Le cambriolage nocturne |
+| 👊 **Agression** | Agression dans le Parc, Rixe au bar |
+| 🏛️ **Corruption** | La corruption municipale, espionnage industriel |
 
 Chaque affaire dispose de **témoins uniques** (2 à 3), de **preuves spécifiques** (authentiques ou falsifiées) et d'un accusé nommé. La culpabilité réelle de l'accusé est révélée après le verdict.
 
 ---
 
-## 🧠 Système de témoins
+## Système de témoins
 
 Chaque témoin possède :
 
 - Une **déclaration initiale** visible sur sa carte
 - Une **personnalité** déterminée par sa fiabilité :
   - 😨 **Nerveux** — hésite, se contredit facilement, paniqué sous pression
-  - 🤥 **Menteur** — sur-précis, défensif, prétend tout savoir
+  - 🤥 **Menteur** — trop précis, défensif, prétend tout savoir
   - 😤 **Confiant** — agressif, repousse les questions, intimidant
   - 🤝 **Coopératif** — honnête, répond directement, facile à questionner
 - Un **niveau de stress** qui augmente à chaque question — au-delà de 70%, le témoin peut se contredire spontanément
@@ -62,7 +62,7 @@ Les témoins répondent différemment selon la **catégorie de question** posée
 
 ---
 
-## 🚀 Lancer le projet
+## Lancer le projet !
 
 ### Prérequis
 
@@ -108,7 +108,7 @@ Le score est calculé à partir de : l'état des preuves (40%), la crédibilité
 
 ---
 
-## 🛠️ Stack technique
+## Stack technique
 
 | Couche | Technologie |
 |--------|-------------|
@@ -122,7 +122,7 @@ Le score est calculé à partir de : l'état des preuves (40%), la crédibilité
 
 ---
 
-## 📡 API REST
+## API REST
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
@@ -175,7 +175,7 @@ src/main/
 
 ---
 
-## 🖥️ Mode terminal (optionnel)
+## Mode terminal (optionnel)
 
 1. Ouvrir [src/main/java/game/TerminalGameRunner.java](src/main/java/game/TerminalGameRunner.java)
 2. Décommenter `@Component` en haut de la classe
