@@ -9,11 +9,15 @@ const G = {
   actionsLeft:     0,
   selectedWitness: -1,
   confrontSel:     [],
-  lastResponse:    null,   // Dernière réponse du témoin (persistante)
+  lastResponse:    null,
+  selectedTopic:   null,
 };
 
 // Statistiques de la session en cours
 const SESSION = { wins: 0, losses: 0 };
+
+// Drapeau pour la confirmation de passage de phase
+let _advanceConfirmPending = false;
 
 const PHASE_MAX_ACTIONS = {
   PROSECUTION_CASE:  3,
@@ -52,6 +56,12 @@ const STRATEGIES = [
   { id:'dramatic',  icon:'⚡', name:'Coup de Théâtre',
     desc:'Une révélation de dernière minute. Risqué mais potentiellement décisif. Le juré n°4 se réveille.',
     effect:'Effet surprise — résultat imprévisible' },
+];
+
+// Sujets de confrontation prédéfinis
+const CONFRONT_TOPICS = [
+  'Alibi', 'Heure des faits', 'Présence sur les lieux',
+  'Relation avec la victime', 'Déclaration initiale', 'Témoignage contradictoire',
 ];
 
 // Questions suggérées par catégorie (alibi, crédibilité, observation, motif, timeline, confrontation)
@@ -233,9 +243,11 @@ function renderSidebar(state) {
 function renderPhasePanel(state) {
   const panel = document.getElementById('phase-panel');
   panel.innerHTML = '';
-  G.selectedWitness = -1;
-  G.confrontSel     = [];
-  G.lastResponse    = null;
+  G.selectedWitness      = -1;
+  G.confrontSel          = [];
+  G.lastResponse         = null;
+  G.selectedTopic        = null;
+  _advanceConfirmPending = false;
 
   switch (state.phase) {
     case 'OPENING_STATEMENTS': renderOpening(panel, state);     break;
@@ -346,8 +358,8 @@ function renderCrossExam(panel, state) {
       <div>
         <strong>Contre-interrogatoire — Confrontez deux témoins</strong>
         <p>
-          Cliquez sur <strong>deux témoins</strong> pour les sélectionner (badges T1 et T2).
-          Entrez le sujet de la confrontation et cliquez <strong>Confronter</strong>.
+          Cliquez sur <strong>deux témoins</strong> pour les sélectionner (badges T1 et T2),
+          choisissez un <strong>sujet</strong> parmi les options proposées, puis cliquez <strong>Confronter</strong>.
         </p>
       </div>
     </div>
@@ -360,10 +372,14 @@ function renderCrossExam(panel, state) {
     <div class="card-grid" id="witness-cards"></div>
 
     <div class="confront-section hidden" id="confront-form">
-      <h4 id="confront-title">Sélectionnez deux témoins</h4>
-      <div class="confront-form">
-        <input id="topic-input" type="text" placeholder="Sujet : alibi, présence sur les lieux, heure des faits…" />
-        <button class="btn-success" id="confront-btn">⚡ Confronter</button>
+      <h4 id="confront-title">Confrontation</h4>
+      <div class="qcat-label" style="margin-bottom:.5rem">Choisissez un sujet de confrontation</div>
+      <div class="quick-questions" id="confront-topic-chips">
+        ${CONFRONT_TOPICS.map(t => `<button class="q-chip confront-chip" data-topic="${t}">${t}</button>`).join('')}
+      </div>
+      <div style="margin-top:.85rem;display:flex;align-items:center;gap:.75rem">
+        <button class="btn-success" id="confront-btn" disabled>⚡ Confronter</button>
+        <span class="confront-topic-label" id="topic-selected-label"></span>
       </div>
     </div>
 
@@ -376,6 +392,19 @@ function renderCrossExam(panel, state) {
   renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.CROSS_EXAMINATION);
   renderWitnessCards('#witness-cards', state, true);
   document.getElementById('next-btn').addEventListener('click', advancePhase);
+
+  // Handlers chips de sujet
+  panel.querySelectorAll('.confront-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      G.selectedTopic = chip.dataset.topic;
+      panel.querySelectorAll('.confront-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      const label = document.getElementById('topic-selected-label');
+      if (label) label.textContent = `Sujet : « ${G.selectedTopic} »`;
+      const btn = document.getElementById('confront-btn');
+      if (btn && G.confrontSel.length === 2) btn.disabled = false;
+    });
+  });
 }
 
 // ─── Phase 5 : Plaidoiries ──────────────────────────────────
@@ -501,16 +530,25 @@ function renderEvidenceCards(selector, state, withContestBtn) {
 
   container.innerHTML = state.evidences.map((e, listIdx) => {
     const pct  = Math.round(e.weight * 100);
-    const cls  = e.contested
+    const cls = e.contested
       ? 'evidence-card contested'
-      : e.authentic ? 'evidence-card authentic' : 'evidence-card fake';
+      : withContestBtn
+        ? 'evidence-card'
+        : e.authentic ? 'evidence-card authentic' : 'evidence-card fake';
 
     const tags = [];
-    if (e.authentic && pct >= 75) tags.push('<span class="tag tag-danger">🚨 CRITIQUE</span>');
-    if (e.authentic) tags.push('<span class="tag tag-red">Authentique</span>');
-    else if (!e.contested) tags.push('<span class="tag tag-green">💡 À contester !</span>');
-    else tags.push('<span class="tag tag-green">Douteux</span>');
-    if (e.contested) tags.push('<span class="tag tag-gold">✔ Neutralisé</span>');
+    if (e.contested) {
+      tags.push('<span class="tag tag-gold">✔ Neutralisée</span>');
+    } else if (withContestBtn) {
+      // Phase accusation : on ne révèle pas si la preuve est vraie ou fausse
+      tags.push('<span class="tag tag-muted">Non vérifiée</span>');
+      if (pct >= 75) tags.push('<span class="tag tag-danger">⚠ Lourde</span>');
+    } else {
+      // Phase ouverture : on peut tout lire
+      if (e.authentic && pct >= 75) tags.push('<span class="tag tag-danger">🚨 CRITIQUE</span>');
+      if (e.authentic) tags.push('<span class="tag tag-red">Authentique</span>');
+      else tags.push('<span class="tag tag-green">Douteuse</span>');
+    }
     const shortcut = withContestBtn && !e.contested ? `<span class="kbd-hint">${listIdx + 1}</span>` : '';
 
     const canContest = withContestBtn && !e.contested && G.actionsLeft > 0;
@@ -708,52 +746,65 @@ function updateConfrontForm() {
   const ready = G.confrontSel.length === 2;
   form.classList.toggle('hidden', !ready);
 
-  if (ready) {
-    const w1 = G.state.witnesses[G.confrontSel[0]];
-    const w2 = G.state.witnesses[G.confrontSel[1]];
-    title.textContent = `Confronter ${w1.name} et ${w2.name}`;
+  const btn = document.getElementById('confront-btn');
 
-    const btn = document.getElementById('confront-btn');
-    if (btn) {
-      btn.onclick = async () => {
-        if (G.actionsLeft <= 0) { toast('Plus de confrontations disponibles.', 'error'); return; }
-        const topic = (document.getElementById('topic-input')?.value.trim()) || 'leur déclaration';
-        btn.disabled = true;
-        setLoading(true);
-        try {
-          const result = await api('POST', `/${G.trialId}/confront`, {
-            witness1: G.confrontSel[0],
-            witness2: G.confrontSel[1],
-            topic
-          });
-          G.actionsLeft--;
-          G.confrontSel = [];
-          softRender(result.gameState);
-          renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.CROSS_EXAMINATION);
+  if (!ready) {
+    if (btn) btn.disabled = true;
+    return;
+  }
 
-          const area = document.getElementById('response-area');
-          if (area) {
-            const cls = result.contradictionDetected ? 'response-box contradiction' : 'response-box';
-            area.innerHTML = `<div class="${cls}">
-              <div class="resp-name">${result.contradictionDetected ? '⚡ Contradiction !' : '🔍 Résultat'}</div>
-              <div class="resp-text">${result.message}</div>
-            </div>`;
-          }
+  const w1 = G.state.witnesses[G.confrontSel[0]];
+  const w2 = G.state.witnesses[G.confrontSel[1]];
+  title.textContent = `Confronter ${w1?.name ?? '?'} et ${w2?.name ?? '?'}`;
 
-          // Désélectionner les témoins
-          document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
-            c.classList.remove('selected');
-            c.querySelectorAll('.selected-badge').forEach(b => b.remove());
-          });
-          form.classList.add('hidden');
-        } catch (e) {
-          toast('Erreur : ' + e.message, 'error');
-          btn.disabled = false;
-        } finally {
-          setLoading(false);
+  if (btn) {
+    // Activer seulement si un sujet a déjà été sélectionné
+    btn.disabled = !G.selectedTopic;
+
+    btn.onclick = async () => {
+      if (G.actionsLeft <= 0) { toast('Plus de confrontations disponibles.', 'error'); return; }
+      if (!G.selectedTopic)   { toast('Choisissez un sujet de confrontation.', 'error'); return; }
+      const topic = G.selectedTopic;
+      btn.disabled = true;
+      setLoading(true);
+      try {
+        const result = await api('POST', `/${G.trialId}/confront`, {
+          witness1: G.confrontSel[0],
+          witness2: G.confrontSel[1],
+          topic
+        });
+        G.actionsLeft--;
+        G.confrontSel  = [];
+        G.selectedTopic = null;
+        softRender(result.gameState);
+        renderActionDots(G.actionsLeft, PHASE_MAX_ACTIONS.CROSS_EXAMINATION);
+
+        const area = document.getElementById('response-area');
+        if (area) {
+          const cls = result.contradictionDetected ? 'response-box contradiction' : 'response-box';
+          area.innerHTML = `<div class="${cls}">
+            <div class="resp-name">${result.contradictionDetected ? '⚡ Contradiction !' : '🔍 Résultat'}</div>
+            <div class="resp-text">${result.message}</div>
+          </div>`;
         }
-      };
-    }
+
+        document.querySelectorAll('#witness-cards .witness-card').forEach(c => {
+          c.classList.remove('selected');
+          c.querySelectorAll('.selected-badge').forEach(b => b.remove());
+        });
+        form.classList.add('hidden');
+
+        // Réinitialiser les chips et le label
+        document.querySelectorAll('.confront-chip').forEach(c => c.classList.remove('selected'));
+        const label = document.getElementById('topic-selected-label');
+        if (label) label.textContent = '';
+      } catch (e) {
+        toast('Erreur : ' + e.message, 'error');
+        btn.disabled = false;
+      } finally {
+        setLoading(false);
+      }
+    };
   }
 }
 
@@ -761,12 +812,30 @@ function updateConfrontForm() {
 //  Avancement de phase
 // ════════════════════════════════════════════════════════════
 async function advancePhase() {
+  const phase       = G.state?.phase;
+  const needsWarning = G.actionsLeft > 0 && !!PHASE_MAX_ACTIONS[phase];
+
+  // Premier clic : avertissement si actions restantes
+  if (needsWarning && !_advanceConfirmPending) {
+    _advanceConfirmPending = true;
+    const btn = document.getElementById('next-btn');
+    if (btn) {
+      btn.textContent = '⚠ Confirmer et passer →';
+      btn.classList.remove('btn-outline');
+      btn.classList.add('btn-primary');
+    }
+    toast(buildPhaseSummary(phase), 'warning');
+    return;
+  }
+
+  _advanceConfirmPending = false;
   setLoading(true);
   try {
     const state = await api('POST', `/${G.trialId}/next`);
     G.selectedWitness = -1;
     G.confrontSel     = [];
     G.lastResponse    = null;
+    G.selectedTopic   = null;
     setPhaseActions(state.phase);
     render(state);
   } catch (e) {
@@ -778,6 +847,18 @@ async function advancePhase() {
 
 function setPhaseActions(phase) {
   G.actionsLeft = PHASE_MAX_ACTIONS[phase] ?? 0;
+}
+
+function buildPhaseSummary(phase) {
+  const n  = G.actionsLeft;
+  const pl = n > 1;
+  if (phase === 'PROSECUTION_CASE')
+    return `Il vous reste ${n} action${pl ? 's' : ''} — certaines preuves n'ont peut-être pas été vérifiées.`;
+  if (phase === 'DEFENSE_CASE')
+    return `Il vous reste ${n} question${pl ? 's' : ''} — des témoins n'ont pas encore été interrogés.`;
+  if (phase === 'CROSS_EXAMINATION')
+    return `Il vous reste ${n} confrontation${pl ? 's' : ''} disponible${pl ? 's' : ''}.`;
+  return `Il vous reste ${n} action${pl ? 's' : ''} non utilisée${pl ? 's' : ''}.`;
 }
 
 // ════════════════════════════════════════════════════════════
