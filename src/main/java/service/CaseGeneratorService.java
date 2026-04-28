@@ -17,8 +17,8 @@ public class CaseGeneratorService {
         new CaseTemplate(
             "Le Meurtre au Manoir",
             "Loris Lebelge est accusé du meurtre de son associé Ugo Ferri, " +
-            "retrouvé mort dans son bureau avec une blessure par arme blanche. " +
-            "Les deux hommes se disputaient depuis des semaines à propos d'un investissement raté dans une fromagerie normande.",
+            "retrouvé mort et nu dans son bureau avec une blessure par arme blanche. " +
+            "Les deux hommes se disputaient depuis des semaines à propos de l'inflation du prix des frites",
             "Loris Lebelge",
             Case.CrimeType.MURDER,
             List.of(
@@ -35,9 +35,9 @@ public class CaseGeneratorService {
         ),
 
         new CaseTemplate(
-            "Le Meurtre à l'Hôtel des Arts",
-            "Camille Beaumont est accusée d'avoir empoisonné son mari René, " +
-            "producteur de cinéma réputé pour ses critiques mordantes et sa passion pour les minibars d'hôtel, " +
+            "Meurtre à l'Hôtel des Arts",
+            "Camille Beaumont est accusée d'avoir étouffé son mari René en s'asseyant sur son visage, " +
+            "producteur de film x réputé pour ses critiques mordantes et sa passion pour les minibars d'hôtel, " +
             "retrouvé mort dans leur suite parisienne. Les médecins ont d'abord cru à une overdose de champagne.",
             "Camille Beaumont",
             Case.CrimeType.MURDER,
@@ -62,7 +62,7 @@ public class CaseGeneratorService {
             "Patricia Vidal est accusée d'avoir volontairement incendié l'entrepôt " +
             "de son ex-associé, causant la mort du gardien de nuit Karim Azizi. " +
             "L'entrepôt stockait principalement des chaises en plastique orange et 400 boîtes de haricots verts — " +
-            "personne n'a vraiment compris la valeur de l'affaire.",
+            "personne n'a vraiment compris la valeur de l'affaire..",
             "Patricia Vidal",
             Case.CrimeType.MURDER,
             List.of(
