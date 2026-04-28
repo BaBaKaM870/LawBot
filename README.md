@@ -51,10 +51,10 @@ Chaque témoin possède :
 
 - Une **déclaration initiale** visible sur sa carte
 - Une **personnalité** déterminée par sa fiabilité :
-  - 😨 **Nerveux** — hésite, se contredit facilement, paniqué sous pression
-  - 🤥 **Menteur** — trop précis, défensif, prétend tout savoir
-  - 😤 **Confiant** — agressif, repousse les questions, intimidant
-  - 🤝 **Coopératif** — honnête, répond directement, facile à questionner
+  - **Nerveux** — hésite, se contredit facilement, paniqué sous pression
+  - **Menteur** — trop précis, défensif, prétend tout savoir
+  - **Confiant** — agressif, repousse les questions, intimidant
+  - **Coopératif** — honnête, répond directement, facile à questionner
 - Un **niveau de stress** qui augmente à chaque question — au-delà de 70%, le témoin peut se contredire spontanément
 - Un **score de crédibilité** qui baisse si des contradictions sont détectées
 
